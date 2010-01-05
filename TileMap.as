@@ -92,6 +92,11 @@ package toolbox {
 			mapBitmapData.unlock();
 		}
 		
+		public function get tileWidth():int		{ return __tileWidth; }
+		public function get tileHeight():int	{ return __tileHeight; }
+		public function get tilesWide():int		{ return __tilesWide; }
+		public function get tilesHigh():int		{ return __tilesHigh; }
+		
 		// settings
 		private var __tileWidth:int;
 		private var __tileHeight:int;
