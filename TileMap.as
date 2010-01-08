@@ -5,8 +5,9 @@
  * Sample Map:
  * <?xml version="1.0" ?>
  * <map>
- *  <settings tilesWide="2" tilesHigh="2" tileWidth="50" tileHeight="50" />
+ *  <settings tilesWide="2" tilesHigh="2" tileWidth="50" tileHeight="50" tilePrefix="tile_" />
  *  <tile num="2" name="grass1" />
+ *  <tile num="4" name="tree1" />
  * </map>
  */
 
@@ -21,9 +22,7 @@ package toolbox {
 	
 	public class TileMap {
 		
-		public function TileMap() {
-			
-		}
+		public function TileMap() {}
 		
 		public function load( mapXML:XML, applicationDomain:ApplicationDomain ):void {
 			// clear or initialize
@@ -38,18 +37,27 @@ package toolbox {
 			__tilesHigh = __XML.settings.@tilesHigh;
 			__tileWidth = __XML.settings.@tileWidth;
 			__tileHeight = __XML.settings.@tileHeight;
+			__tilePrefix = __XML.settings.@tilePrefix;
 			
 			// calculate other settings
 			__width = __tileWidth * __tilesWide;
 			__height = __tileHeight * __tilesHigh;
 			
 			// loop through all tiles
+			__lastInsert = 0;
 			for each (var tileXML:XML in __XML.tile) {
-				// add tile class to tiles array if it isn't already there
+				// add tile class to tileClasses array if it isn't already there
                 findTileClassOrInsert( { name:tileXML.@name } );
-				// TODO: fix this... must insert at tileXML.@num to support tilemaps
-				// 		 that don't have all tiles
+				
+				// add empty string for tiles that don't exist in this tilemap
+				while( __lastInsert != (tileXML.@num - 1) ) {
+					__tiles.push( "" );
+					__lastInsert++;
+				}
+				
+				// add the class name this tile uses
 				__tiles.push( tileXML.@name );
+				__lastInsert++;
             }
 		}
 		
@@ -91,9 +99,14 @@ package toolbox {
 					// find tile
 					tileToFind = tileNum + colCount + (rowCount * __tilesWide) + 1;
 					tileName = __tiles[ tileToFind ];
-					// draw tile
-					mapBitmapData.draw( __tileClasses[ findTileClassNum( tileName ) ].bitmapData, 
-										new Matrix( 1, 0, 0, 1, offsetX + x, offsetY + y ) );
+					
+					// if the tile is in the tilemap
+					if ( tileName != "" ) {
+						// draw tile
+						mapBitmapData.draw( __tileClasses[ findTileClassNum( tileName ) ].bitmapData, 
+											new Matrix( 1, 0, 0, 1, offsetX + x, offsetY + y ) );
+					}
+					
 					// go to next column
 					x += __tileWidth;
 					colCount++;
@@ -119,6 +132,7 @@ package toolbox {
 		private var __tilesWide:int;
 		private var __width:uint;
 		private var __height:uint;
+		private var __tilePrefix:String;
 		
 		// data
 		private var __tileClasses:Array;
@@ -195,7 +209,7 @@ package toolbox {
 				tileNum = __tileClasses.length - 1;
 				
 				// draw the movieclip of the tile to a bitmapdata object
-				var tileClass:Class = __domain.getDefinition( "tile_" + tileObject.name  ) as Class;
+				var tileClass:Class = __domain.getDefinition( __tilePrefix + tileObject.name  ) as Class;
 				var tileMC:MovieClip = MovieClip( new tileClass );
 				var data:BitmapData = new BitmapData( __tileWidth, __tileHeight );
 				data.draw( tileMC );
