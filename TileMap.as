@@ -1,5 +1,13 @@
 ﻿/*
- *
+ * Critical assumptions made about map format:
+ * Tile num is always sorted in ascending order
+ * 
+ * Sample Map:
+ * <?xml version="1.0" ?>
+ * <map>
+ *  <settings tilesWide="2" tilesHigh="2" tileWidth="50" tileHeight="50" />
+ *  <tile num="2" name="grass1" />
+ * </map>
  */
 
 package toolbox {
@@ -18,9 +26,9 @@ package toolbox {
 		}
 		
 		public function load( mapXML:XML, applicationDomain:ApplicationDomain ):void {
-			clearTilesArray();
-			
-			__tileNames = new Array();
+			// clear or initialize
+			clearOrInitTileClassesArray();
+			clearOrInitTilesArray();
 			
 			__domain = applicationDomain;
 			__XML = mapXML;
@@ -37,10 +45,11 @@ package toolbox {
 			
 			// loop through all tiles
 			for each (var tileXML:XML in __XML.tile) {
-				// add tile to tiles array if it isn't already there
-                findTileOrInsert( { name:tileXML.@name } );
-				// TODO: fix this... must insert at tileXML.@num!
-				__tileNames.push( tileXML.@name );
+				// add tile class to tiles array if it isn't already there
+                findTileClassOrInsert( { name:tileXML.@name } );
+				// TODO: fix this... must insert at tileXML.@num to support tilemaps
+				// 		 that don't have all tiles
+				__tiles.push( tileXML.@name );
             }
 		}
 		
@@ -73,17 +82,23 @@ package toolbox {
 			// about to start drawing, lock the bitmap data
 			mapBitmapData.lock();
 			
+			// loop through rows
 			while( y < height ) {
 				x = 0;
 				colCount = 0;
+				// loop through columns
 				while ( x < width ) {
+					// find tile
 					tileToFind = tileNum + colCount + (rowCount * __tilesWide) + 1;
-					tileName = __tileNames[ tileToFind ];
-					mapBitmapData.draw( __tiles[ findTile( tileName ) ].bitmapData, 
+					tileName = __tiles[ tileToFind ];
+					// draw tile
+					mapBitmapData.draw( __tileClasses[ findTileClassNum( tileName ) ].bitmapData, 
 										new Matrix( 1, 0, 0, 1, offsetX + x, offsetY + y ) );
+					// go to next column
 					x += __tileWidth;
 					colCount++;
 				}
+				// go to next row
 				y += __tileHeight;
 				rowCount++;
 			}
@@ -106,13 +121,15 @@ package toolbox {
 		private var __height:uint;
 		
 		// data
+		private var __tileClasses:Array;
 		private var __tiles:Array;
-		private var __tileNames:Array;
 		private var __domain:ApplicationDomain;
 		private var __XML:XML;
+		private var __lastInsert:uint;
 		
 		private function convertXYToTileNum( x:int, y:int, offset:Object = null ):int {
 			
+			// ensure x,y are in the map
 			if( x > __width || y > __height ) {
 				throw new Error( "x{" + x + "} > __width{" + __width + "} or y{" + y + "} > __height{" + __height + "}" );
 			}
@@ -120,20 +137,23 @@ package toolbox {
 				throw new Error( "x{" + x + "} < 0 or y{" + y + "} < 0" );
 			}
 			
+			// get column and row
 			var tileColumn:int = x / __tileWidth;
 			var tileRow:int = y / __tileHeight;
 			
 			if ( offset != null ) {
+				// get remainder if requested
 				offset.x = x - (tileColumn * __tileWidth);
 				offset.y = y - (tileRow * __tileHeight);
 			}
+			
+			// calculate tile number
 			return (tileRow * __tilesWide) + tileColumn;
 		}
 		
-		private function clearTilesArray():void {
+		private function clearOrInitTilesArray():void {
 			// if the array exists and has content, empty it
 			if( __tiles && __tiles.length > 0 ) {
-				// TODO: remove the bitmapData from each element of the array first?
 				__tiles.splice( 0, __tiles.length );
 			}
 			// otherwise create a new array
@@ -142,11 +162,23 @@ package toolbox {
 			}
 		}
 		
-		private function findTile( tileName:String ):uint {
-			var tilesLength:uint = __tiles.length;
+		private function clearOrInitTileClassesArray():void {
+			// if the array exists and has content, empty it
+			if( __tileClasses && __tileClasses.length > 0 ) {
+				// TODO: remove the bitmapData from each element of the array first?
+				__tileClasses.splice( 0, __tileClasses.length );
+			}
+			// otherwise create a new array
+			else {
+				__tileClasses = new Array();
+			}
+		}
+		
+		private function findTileClassNum( tileName:String ):uint {
+			var tilesLength:uint = __tileClasses.length;
 			// loop through the tiles until a match is found
 			for ( var i:uint = 0 ; i < tilesLength ; i++ ) {
-				if ( __tiles[ i ].name == tileName ) {
+				if ( __tileClasses[ i ].name == tileName ) {
 					return i;
 				}
 			}
@@ -154,20 +186,20 @@ package toolbox {
 			return uint.MAX_VALUE;
 		}
 		
-		private function findTileOrInsert( tileObject:Object ):int {
+		private function findTileClassOrInsert( tileObject:Object ):int {
 			// find the tile
-			var tileNum:uint = findTile( tileObject.name );
+			var tileNum:uint = findTileClassNum( tileObject.name );
 			// or insert
 			if( tileNum == uint.MAX_VALUE ) {
-				__tiles.push( tileObject );
-				tileNum = __tiles.length - 1;
+				__tileClasses.push( tileObject );
+				tileNum = __tileClasses.length - 1;
 				
 				// draw the movieclip of the tile to a bitmapdata object
 				var tileClass:Class = __domain.getDefinition( "tile_" + tileObject.name  ) as Class;
 				var tileMC:MovieClip = MovieClip( new tileClass );
 				var data:BitmapData = new BitmapData( __tileWidth, __tileHeight );
 				data.draw( tileMC );
-				__tiles[ tileNum ].bitmapData = data;
+				__tileClasses[ tileNum ].bitmapData = data;
 			}
 			return tileNum;
 		}
