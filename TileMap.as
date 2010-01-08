@@ -44,20 +44,30 @@ package toolbox {
 			__height = __tileHeight * __tilesHigh;
 			
 			// loop through all tiles
-			__lastInsert = 0;
+			var lastInsert:uint = 0;
+			var numAttributes:int = 0;
 			for each (var tileXML:XML in __XML.tile) {
 				// add tile class to tileClasses array if it isn't already there
-                findTileClassOrInsert( { name:tileXML.@name } );
+                findTileClassOrInsert( tileXML.@name );
 				
 				// add empty string for tiles that don't exist in this tilemap
-				while( __lastInsert != (tileXML.@num - 1) ) {
+				while( lastInsert != (tileXML.@num - 1) ) {
 					__tiles.push( "" );
-					__lastInsert++;
+					lastInsert++;
 				}
 				
-				// add the class name this tile uses
-				__tiles.push( tileXML.@name );
-				__lastInsert++;
+				// create a tile object and add all of the XML tile attributes to it
+				var tile:Object = { name:"", num:"" };
+				var attrName:String = "";
+				numAttributes = tileXML.attributes().length();
+				for ( var i:uint = 0 ; i < numAttributes ; i++ ) {
+					attrName = tileXML.attributes()[ i ].name();
+					tile[ attrName ] = tileXML.attributes()[ i ];
+				}
+				
+				__tiles.push( tile );
+				
+				lastInsert++;
             }
 		}
 		
@@ -98,7 +108,7 @@ package toolbox {
 				while ( x < width ) {
 					// find tile
 					tileToFind = tileNum + colCount + (rowCount * __tilesWide) + 1;
-					tileName = __tiles[ tileToFind ];
+					tileName = __tiles[ tileToFind ][ "name" ];
 					
 					// if the tile is in the tilemap
 					if ( tileName != "" ) {
@@ -120,6 +130,18 @@ package toolbox {
 			mapBitmapData.unlock();
 		}
 		
+		public function getTileAttributes( mapX:int, mapY:int ):Object {
+			// return the attributes object of the tile at X, Y
+			return __tiles[ convertXYToTileNum( mapX, mapY ) ];
+		}
+		
+		public function destroy():void {
+			clearOrInitTileClassesArray();
+			clearOrInitTilesArray();
+			__domain = null;
+			__XML = null;
+		}
+		
 		public function get tileWidth():int		{ return __tileWidth; }
 		public function get tileHeight():int	{ return __tileHeight; }
 		public function get tilesWide():int		{ return __tilesWide; }
@@ -139,7 +161,6 @@ package toolbox {
 		private var __tiles:Array;
 		private var __domain:ApplicationDomain;
 		private var __XML:XML;
-		private var __lastInsert:uint;
 		
 		private function convertXYToTileNum( x:int, y:int, offset:Object = null ):int {
 			
@@ -168,6 +189,10 @@ package toolbox {
 		private function clearOrInitTilesArray():void {
 			// if the array exists and has content, empty it
 			if( __tiles && __tiles.length > 0 ) {
+				// clear the tile objects
+				for( var i:uint = 0 ; i < __tiles.length ; i++ ) {
+					__tiles[ i ] = null;
+				}
 				__tiles.splice( 0, __tiles.length );
 			}
 			// otherwise create a new array
@@ -179,7 +204,11 @@ package toolbox {
 		private function clearOrInitTileClassesArray():void {
 			// if the array exists and has content, empty it
 			if( __tileClasses && __tileClasses.length > 0 ) {
-				// TODO: remove the bitmapData from each element of the array first?
+				// clean up the bitmapData
+				for( var i:uint = 0 ; i < __tileClasses.length ; i++ ) {
+					__tileClasses[ i ].bitmapData.dispose();
+					__tileClasses[ i ].bitmapData = null;
+				}
 				__tileClasses.splice( 0, __tileClasses.length );
 			}
 			// otherwise create a new array
@@ -200,23 +229,23 @@ package toolbox {
 			return uint.MAX_VALUE;
 		}
 		
-		private function findTileClassOrInsert( tileObject:Object ):int {
+		private function findTileClassOrInsert( className:String ):int {
 			// find the tile
-			var tileNum:uint = findTileClassNum( tileObject.name );
+			var tileNum:uint = findTileClassNum( className );
 			// or insert
 			if( tileNum == uint.MAX_VALUE ) {
-				__tileClasses.push( tileObject );
-				tileNum = __tileClasses.length - 1;
-				
 				// draw the movieclip of the tile to a bitmapdata object
-				var tileClass:Class = __domain.getDefinition( __tilePrefix + tileObject.name  ) as Class;
+				var tileClass:Class = __domain.getDefinition( __tilePrefix + className  ) as Class;
 				var tileMC:MovieClip = MovieClip( new tileClass );
 				var data:BitmapData = new BitmapData( __tileWidth, __tileHeight );
 				data.draw( tileMC );
-				__tileClasses[ tileNum ].bitmapData = data;
+				
+				// insert
+				var tileClassObject:Object = { name:className, bitmapData:data };
+				__tileClasses.push( tileClassObject );
+				tileNum = __tileClasses.length - 1;
 			}
 			return tileNum;
 		}
 	}
-	
 }
