@@ -14,7 +14,6 @@ package toolbox {
 		//
 		
 		// singleton constructor
-		// this way any elements don't need an instance passed to them they can just query FoodFuryGame
 		public function EventHandler( caller:Function = null ):void {
 
 			if( caller != EventHandler.getInstance ) {
