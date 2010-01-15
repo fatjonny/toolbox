@@ -99,16 +99,17 @@ package toolbox {
 			
 			// about to start drawing, lock the bitmap data
 			mapBitmapData.lock();
+			mapBitmapData.fillRect( mapBitmapData.rect, 0x00000000 );
 			
 			// loop through rows
-			while( y < height ) {
+			while( offsetY + y < height ) {
 				x = 0;
 				colCount = 0;
 				// loop through columns
 				while ( x < width ) {
 					// find tile
 					tileToFind = tileNum + colCount + (rowCount * __tilesWide) + 1;
-					tileName = __tiles[ tileToFind ][ "name" ];
+					tileName = __tiles[ (tileToFind-1) ][ "name" ];
 					
 					// if the tile is in the tilemap
 					if ( tileName != "" ) {
