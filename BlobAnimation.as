@@ -4,9 +4,9 @@
 
 package toolbox {
 	
-	public class Animation {
+	public class BlobAnimation {
 		
-		public function Animation() {
+		public function BlobAnimation() {
 			
 		}
 		
