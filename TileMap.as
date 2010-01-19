@@ -71,6 +71,7 @@ package toolbox {
             }
 		}
 		
+		// assumes that mapBitmap is lock()ed and will be unlock()ed sometime afterwards
 		public function draw( mapBitmapData:BitmapData, mapX:int, mapY:int, width:int = 0, height:int = 0, offsetX:int = 0, offsetY:int = 0 ):void {
 			
 			// if no width, default to bitmap data width
@@ -97,10 +98,6 @@ package toolbox {
 			offsetX += -1 * offset.x;
 			offsetY += -1 * offset.y;
 			
-			// about to start drawing, lock the bitmap data
-			mapBitmapData.lock();
-			mapBitmapData.fillRect( mapBitmapData.rect, 0x00000000 );
-			
 			// loop through rows
 			while( offsetY + y < height ) {
 				x = 0;
@@ -126,9 +123,6 @@ package toolbox {
 				y += __tileHeight;
 				rowCount++;
 			}
-			
-			// done drawing, unlock the bitmapdata
-			mapBitmapData.unlock();
 		}
 		
 		public function getTileAttributes( mapX:int, mapY:int ):Object {
