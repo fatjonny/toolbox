@@ -5,63 +5,88 @@
 package toolbox
 {
 	
+	import flash.display.BitmapData;
+	import flash.display.FrameLabel;
 	import flash.display.MovieClip;
+	import flash.geom.Matrix;
+	import flash.geom.Point;
+	
+	import toolbox.Report;
 	
 	public class MovieClipHelper
 	{
 		
-		public function MovieClipHelper( movieClip:MovieClip ) {
-			
+		public function MovieClipHelper( movieClip:MovieClip, writeStats:Boolean = false ) {
+			__clip = movieClip;
+			__labels = __clip.currentLabels;
+			__writeStats = writeStats;
 		}
 		
-		/*
-			__labels = __character.currentLabels;
+		public function convertFrameToBitmap( frame:Object, bitmapData:BitmapData, offset:Point = null,
+											  scale:Number = 1 ):void {
+			if( offset == null ) { offset = new Point(); }
+			__clip.gotoAndStop( frame );
+			var mat:Matrix = new Matrix();
+			mat.translate( offset.x, offset.y );
+			mat.scale( scale, scale );
+			bitmapData.draw( __clip, mat );
 			
-			var scale:Number = 0.5;
-			
-			var i:uint = 0;
-			for ( i = 0 ; i < __labels.length ; i++ ) {
-				__bitmapDatas.push( new BitmapData( bounds.width * countFramesInLabel( __labels[ i ].name ) * scale, bounds.height * scale ) );
-				convertFrameToBitmap( FrameLabel( __labels[ i ] ).name, __bitmapDatas[ i ], scale );
-				var bitmap:Bitmap = new Bitmap( __bitmapDatas[ i ] );
-				//this.addChild( bitmap );
-				bitmap.x = 50;
-				bitmap.y = 100 + (bounds.height + 5) * i * scale;
+			if( __writeStats ) {
+				Report.log( "convertFrameToBitmap wrote: " + frame.toString() + " of " + __clip.name + " at " + offset.toString() +
+							 " with a scale of " + scale );
 			}
-		
-		
-		private function countFramesInLabel( frameLabel:String ):uint {
-			var count:uint = 0;
-			__character.gotoAndStop( frameLabel );
-			var currentFrame:int = __character.currentFrame;
-			while ( __character.currentLabel == frameLabel ) {
-				count++;
-				__character.gotoAndStop( __character.currentFrame + 1 );
-				if ( currentFrame == __character.currentFrame ) {
-					break;
-				}
-			}
-			trace( frameLabel, count );
-			return count;
 		}
 		
-		private function convertFrameToBitmap( frameLabel:String, bitmapData:BitmapData, scale:Number ):void {
-			var i:uint = 0;
-			__character.gotoAndStop( frameLabel );
-			trace( frameLabel );
-			var currentFrame:int = __character.currentFrame;
-			while( __character.currentLabel == frameLabel ) {
-				trace( __character.currentFrame );
-				var mat:Matrix = new Matrix();
-				mat.translate( 41 + (82 * i), bitmapData.height );
-				mat.scale( scale, scale );
-				bitmapData.draw( __character, mat );
-				__character.gotoAndStop( __character.currentFrame + 1 );
-				i++;
-				if ( currentFrame == __character.currentFrame ) {
-					break;
+		// assumes the bitmapData can fit all of the animation
+		// if the animation hits the width of the bitmapData, moves down one row
+		// TODO: take in the width and height of where the clip is supposed to fit to counteract the mc changing sizes
+		public function convertAnimationToBitmap( frameLabelName:String, bitmapData:BitmapData, offset:Point = null,
+												  scale:Number = 1 ):void {
+			if( offset == null ) { offset = new Point(); }
+			var numFrames:int = countFrameLabelFrames( frameLabelName );
+			var startFrame:int = getFrameLabelFrame( frameLabelName );
+			for( var i:int = 0 ; i < numFrames ; i++ ) {
+				convertFrameToBitmap( startFrame + i, bitmapData, offset, scale );
+				offset.x += __clip.width;
+				if( offset.x + __clip.width > bitmapData.width ) {
+					offset.x = 0;
+					offset.y += __clip.height;
+				}
+				if( offset.y + __clip.height > bitmapData.height ) {
+					Report.warn( "convertAnimationToBitmap " + __clip.name + " " + frameLabelName + 
+								  " drawing [" + offset.y + " + " + __clip.height + "] beyond height of bitmapData "
+								  + bitmapData.height );
 				}
 			}
-		} */
+		}
+		
+		private var __labels:Array;
+		private var __clip:MovieClip;
+		private var __writeStats:Boolean;
+		
+		private function countFrameLabelFrames( frameLabelName:String ):int {
+			for( var i:uint = 0 ; i < __labels.length ; i ++ ) {
+				if( FrameLabel( __labels[ i ] ).name == frameLabelName ) {
+					if( i == __labels.length - 1 ) {
+						return __clip.totalFrames - FrameLabel(__labels[ i ]).frame;
+					}
+					else {
+						return FrameLabel(__labels[ i + 1 ]).frame - FrameLabel(__labels[ i ]).frame;
+					}
+				}
+			}
+			Report.error( "MovieClipHelper::countFrameLabelFrames " + __clip.name + " frame label " + frameLabelName + " not found." );
+			return 0;
+		}
+		
+		private function getFrameLabelFrame( frameLabelName:String ):int {
+			for( var i:uint = 0 ; i < __labels.length ; i ++ ) {
+				if( FrameLabel( __labels[ i ] ).name == frameLabelName ) {
+					return FrameLabel( __labels[i] ).frame;
+				}
+			}
+			Report.error( "MovieClipHelper::getFrameLabelFrame " + __clip.name + " frame label " + frameLabelName + " not found." );
+			return 0;
+		}
 	}
 }
