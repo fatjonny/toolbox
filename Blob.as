@@ -40,7 +40,6 @@ package toolbox
 		}
 		
 		public function update( deltaTime:int ):void {
-			trace( "update", deltaTime );
 			// physics
 			if( active ) {
 				
@@ -60,14 +59,14 @@ package toolbox
 			
 			// draw!
 			if( animated ) {
-				surfaceBitmap.copyPixels( __bitmapData, __currentAnimation.rect, new Point( x - worldX, y - worldY ) );
+				surfaceBitmap.copyPixels( __bitmapData, __currentAnimation.rect, new Point( x - worldX, y - worldY ), null, null, true );
 			}
 			else {
-				surfaceBitmap.copyPixels( __bitmapData, __bitmapData.rect, new Point( x - worldX, y - worldY ) );
+				surfaceBitmap.copyPixels( __bitmapData, __bitmapData.rect, new Point( x - worldX, y - worldY ), null, null, true );
 			}
 		}
 		
-		public function addAnimation( name:String, numFrames:int, fps:int, offsetX:int = 0, offsetY:int = 0 ):void {
+		public function addAnimation( name:String, numFrames:int, fps:Number, offsetX:int = 0, offsetY:int = 0 ):void {
 			if( __animations[ name ] != null ) { __animations[ name ].destroy(); }
 			__animations[ name ] = new BlobAnimation( name, numFrames, fps, new Rectangle( offsetX, offsetY, width, height ) );
 		}
@@ -82,9 +81,18 @@ package toolbox
 		
 		public function playAnimation( name:String, startingFrame:int = 1 ):void {
 			animated = true;
-			__currentAnimation = __animations[ name ];
-			__currentAnimation.currentFrame = startingFrame;
+			if ( __animations[ name ] != null ) {
+				__currentAnimation = __animations[ name ];
+				__currentAnimation.currentFrame = startingFrame;
+			}
+			else {
+				Report.warn( "Blob playAnimation " + name + " animation does not exist!" );
+			}
 			__currentAnimation.play();
+		}
+		
+		public function rotateTo( rotation:Number ):void {
+			;
 		}
 		
 		public function destroy():void {

@@ -10,7 +10,7 @@ package toolbox {
 		
 		public var name:String;
 		
-		public function BlobAnimation( name:String, numFrames:int, fps:int, firstFrame:Rectangle, stripMaxX:int = 2880, stripMinX:int = 0 ) {
+		public function BlobAnimation( name:String, numFrames:int, fps:Number, firstFrame:Rectangle, stripMaxX:int = 2880, stripMinX:int = 0 ) {
 			__numFrames = numFrames;
 			__fps = fps;
 			__msToAdvance = 1000 / __fps;
@@ -35,9 +35,7 @@ package toolbox {
 				} else {
 					advanceFramePosition();
 				}
-				
-				trace( "currentFrameNum", __currentFrameNum );
-				
+								
 				__msLeft += __msToAdvance;
 			}
 		}
@@ -62,7 +60,7 @@ package toolbox {
 		public function destroy():void { }
 		
 		private var __currentFrameNum:int;
-		private var __fps:int;
+		private var __fps:Number;
 		private var __msToAdvance:int;
 		private var __msLeft:int;
 		private var __numFrames:int;
