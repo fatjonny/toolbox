@@ -91,10 +91,6 @@ package toolbox
 			__currentAnimation.play();
 		}
 		
-		public function rotateTo( rotation:Number ):void {
-			;
-		}
-		
 		public function destroy():void {
 			if( __bitmapData ) {
 				__bitmapData.dispose();
