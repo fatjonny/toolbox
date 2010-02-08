@@ -3,6 +3,8 @@
  * 	This class currently supports only convex polygons!
  * 	The first vector starts at 0,0 and the vectors are in an order
  * 	as if drawing the polygon with a pencil.
+ * TODO: add rotation, scale
+ * TODO: test speed of forEach on vectors
  */
 
 package toolbox {
@@ -32,14 +34,12 @@ package toolbox {
 			__x = newX;
 			trace( "x", __x, newX, diff );
 			edges.forEach( function callback(item:Vector2D, index:int, vector:Vector.<Vector2D>):void { item.x += diff; }, null );
-			//vectors.forEach( function callback(item:Vector2D, index:int, vector:Vector.<Vector2D>):void { item.x += diff; }, null );
 		}
 		
 		public function set y( newY:Number ):void {
 			var diff:Number = newY - __y;
 			__y = newY;
 			edges.forEach( function callback(item:Vector2D, index:int, vector:Vector.<Vector2D>):void { item.y += diff; }, null );
-			//vectors.forEach( function callback(item:Vector2D, index:int, vector:Vector.<Vector2D>):void { item.y += diff; }, null );
 		}
 		
 		public function constructFromEdges():void {
@@ -52,8 +52,8 @@ package toolbox {
 		}
 		
 		public function constructFromVectors():void {
-			edges[ 0 ].x = vectors[ 0 ].x;
-			edges[ 0 ].y = vectors[ 0 ].y;
+			edges[ 0 ].x = vectors[ 0 ].x + __x;
+			edges[ 0 ].y = vectors[ 0 ].y + __y;
 			for( var i:uint = 1 ; i < vectors.length ; i++ ) {
 				edges[ i ].x = edges[ i - 1 ].x + vectors[ i ].x;
 				edges[ i ].y = edges[ i - 1 ].y + vectors[ i ].y;
