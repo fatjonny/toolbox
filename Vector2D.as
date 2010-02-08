@@ -44,9 +44,9 @@ package toolbox {
 		}
 		
 		public function normalize():void {
-			var mag:Number = magnitude();
-			x = x / mag;
-			y = y / mag;
+			var inverseMag:Number = 1.0 / magnitude();
+			x = x * inverseMag;
+			y = y * inverseMag;
 		}
 		
 		public function rotate( radians:Number ):void {
