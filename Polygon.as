@@ -32,33 +32,33 @@ package toolbox {
 		public function set x( newX:Number ):void {
 			var diff:Number = newX - __x;
 			__x = newX;
-			edges.forEach( function callback(item:Vector2D, index:int, vector:Vector.<Vector2D>):void { item.x += diff; }, null );
+			//edges.forEach( function callback(item:Vector2D, index:int, vector:Vector.<Vector2D>):void { item.x += diff; }, null );
 			points.forEach( function callback(item:Vector2D, index:int, vector:Vector.<Vector2D>):void { item.x += diff; }, null );
 		}
 		
 		public function set y( newY:Number ):void {
 			var diff:Number = newY - __y;
 			__y = newY;
-			edges.forEach( function callback(item:Vector2D, index:int, vector:Vector.<Vector2D>):void { item.y += diff; }, null );
+			//edges.forEach( function callback(item:Vector2D, index:int, vector:Vector.<Vector2D>):void { item.y += diff; }, null );
 			points.forEach( function callback(item:Vector2D, index:int, vector:Vector.<Vector2D>):void { item.y += diff; }, null );
 		}
 		
 		public function constructFromEdges():void {
-			points[ 0 ].x = edges[ 0 ].x;
-			points[ 0 ].y = edges[ 0 ].y;
+			points[ 0 ].x = __x;
+			points[ 0 ].y = __y;
 			for( var i:uint = 1 ; i < edges.length ; i++ ) {
-				points[ i ].x = edges[ i ].x - edges[ i - 1 ].x;
-				points[ i ].y = edges[ i ].y - edges[ i - 1 ].y;
+				points[ i ].x = points[ i - 1 ].x + edges[ i - 1 ].x;
+				points[ i ].y = points[ i - 1 ].y + edges[ i - 1 ].y;
 			}
 		}
 		
 		public function constructFromPoints():void {
-			edges[ 0 ].x = points[ 0 ].x;
-			edges[ 0 ].y = points[ 0 ].y;
-			for( var i:uint = 1 ; i < points.length ; i++ ) {
-				edges[ i ].x = edges[ i - 1 ].x + points[ i ].x;
-				edges[ i ].y = edges[ i - 1 ].y + points[ i ].y;
+			for( var i:uint = 1 ; i < points.length - 1 ; i++ ) {
+				edges[ i ].x = points[ i + 1 ].x - points[ i ].x;
+				edges[ i ].y = points[ i + 1 ].y - points[ i ].y;
 			}
+			edges[ points.length - 1 ].x = points[ 0 ].x - points[ points.length - 1 ].x;
+			edges[ points.length - 1 ].y = points[ 0 ].y - points[ points.length - 1 ].y;
 		}
 		
 		public function draw( sprite:Sprite, clear:Boolean = true, thickness:Number = 1, color:uint = 0xFFFFFF ):void {
@@ -70,18 +70,21 @@ package toolbox {
 			//var posY:Number = __y;
 			//trace( "draw", x, y, posX, posY );
 			//sprite.graphics.moveTo( posX, posY );
-			sprite.graphics.moveTo( __x, __y );
+			//sprite.graphics.moveTo( __x, __y );
+			sprite.graphics.moveTo( points[ 0 ].x, points[ 0 ].y );
 			
 			// set up drawing
 			sprite.graphics.lineStyle( thickness, color );
 			
 			// draw the edges
-			for( var i:uint = 0 ; i < points.length ; i++ ) {
+			for( var i:uint = 1 ; i < points.length ; i++ ) {
 				//posX += vectors[ i ].x;
 				//posY += vectors[ i ].y;
 				//sprite.graphics.lineTo( posX, posY );
-				sprite.graphics.lineTo( edges[ i ].x, edges[ i ].y );
+				//sprite.graphics.lineTo( edges[ i ].x, edges[ i ].y );
+				sprite.graphics.lineTo( points[ i ].x, points[ i ].y );
 			}
+			sprite.graphics.lineTo( points[ 0 ].x, points[ 0 ].y );
 			sprite.graphics.lineStyle();
 		}
 		

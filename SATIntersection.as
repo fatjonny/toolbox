@@ -6,13 +6,14 @@
  */
 
 package toolbox {
+	import flash.display.Sprite;
 		
 	public class SATIntersection {	
 		
 		//public function SATIntersection() {}
 		
 		// general case
-		public static function PolygonToPolygon( polyA:Polygon, polyB:Polygon ):Boolean {
+		public static function PolygonToPolygon( polyA:Polygon, polyB:Polygon, debug:Sprite ):Boolean {
 			var polyANumEdges:uint = polyA.edges.length;
 			var polyBNumEdges:uint = polyB.edges.length;
 			var numTotalEdges:uint = polyANumEdges + polyBNumEdges;
@@ -32,6 +33,23 @@ package toolbox {
 					__axis = Vector2D.Perpendicular(polyB.edges[ i - polyANumEdges ]);
 				}
 				__axis.normalize();
+				
+				var point:Vector2D;
+				var edge:Vector2D;
+				
+				debug.graphics.lineStyle( 1, 0xBBBBBB );
+				if( i < polyANumEdges ) {
+					point = polyA.points[ i ];
+					edge = polyA.edges[	i ];
+				}
+				else {
+					point = polyB.points[ i - polyANumEdges ];
+					edge = polyB.edges[ i - polyANumEdges ];
+				}
+				
+				debug.graphics.moveTo( point.x + (edge.x / 2), point.y + (edge.y / 2) );
+				debug.graphics.lineTo( point.x + (edge.x / 2) + __axis.x * 100, point.y + (edge.y / 2) + __axis.y * 100 );
+				debug.graphics.lineStyle();
 				
 				// project all polyA vectors onto axis
 				min = Number.MAX_VALUE;
