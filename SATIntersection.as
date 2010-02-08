@@ -1,7 +1,7 @@
 ﻿/*
  * Assumptions:
  * 	Convex polygons
- * 	All polygons fulfill edges.length == vectors.length
+ * 	All polygons fulfill edges.length == points.length
  * 	The optimized cases assume you pass in the correct polygons
  */
 
@@ -26,17 +26,18 @@ package toolbox {
 			for( var i:uint = 0 ; i < numTotalEdges ; i++ ) {
 				// get separating axis
 				if( i < polyANumEdges ) {
-					__axis = Vector2D.Perpendicular(polyA.edges[ i ]).normalize();
+					__axis = Vector2D.Perpendicular(polyA.edges[ i ]);
 				}
 				else {
-					__axis = Vector2D.Perpendicular(polyB.edges[ i - polyANumEdges ]).normalize();
+					__axis = Vector2D.Perpendicular(polyB.edges[ i - polyANumEdges ]);
 				}
+				__axis.normalize();
 				
 				// project all polyA vectors onto axis
 				min = Number.MAX_VALUE;
 				max = Number.MIN_VALUE;
 				for( j = 0 ; j < polyANumEdges ; j++ ) {
-					dot = Vector2D.DotProduct( polyA.vectors[ j ], __axis );
+					dot = Vector2D.DotProduct( polyA.points[ j ], __axis );
 					if( dot < min ) { min = dot; }
 					if( dot > max ) { max = dot; }
 				}
@@ -47,7 +48,7 @@ package toolbox {
 				min = Number.MAX_VALUE;
 				max = Number.MIN_VALUE;
 				for( j = 0 ; j < polyBNumEdges ; j++ ) {
-					dot = Vector2D.DotProduct( polyB.vectors[ j ], __axis );
+					dot = Vector2D.DotProduct( polyB.points[ j ], __axis );
 					if( dot < min ) { min = dot; }
 					if( dot > max ) { max = dot; }
 				}
@@ -55,7 +56,8 @@ package toolbox {
 				__polyBProjectionMin = min;
 				
 				// if the two projections don't overlap, no intersection
-				if( __polyAProjectionMax < __polyBProjectionMin || __polyBProjectionMax < __polyAProjectionMin ) {
+//				trace( "projections: ", __polyAProjectionMax, ">", __polyBProjectionMin, "&&", __polyBProjectionMax, ">", __polyAProjectionMin, (__polyAProjectionMax > __polyBProjectionMin && __polyBProjectionMax > __polyAProjectionMin) );
+				if( !(__polyAProjectionMax > __polyBProjectionMin && __polyBProjectionMax > __polyAProjectionMin) ) {
 					return false;
 				}
 			}
@@ -63,13 +65,13 @@ package toolbox {
 		}
 		
 		// optimized cases
-		public static function RectangleToRectangle( polyA:Polygon, polyB:Polygon ):Vector2D {
+		//public static function RectangleToRectangle( polyA:Polygon, polyB:Polygon ):Vector2D {
 			
-		}
+		//}
 		
-		public static function AABBToAABB( polyA:Polygon, polyB:Polygon ):Vector2D {
+		//public static function AABBToAABB( polyA:Polygon, polyB:Polygon ):Vector2D {
 			
-		}
+		//}
 		
 		private static var __polyAProjectionMin:Number;
 		private static var __polyAProjectionMax:Number;
