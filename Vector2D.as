@@ -57,5 +57,9 @@ package toolbox {
 			x = xT;
 			y = yT;
 		}
+		
+		public function toString():String {
+			return "x: " + x + " y: " + y;
+		}
 	}
 }

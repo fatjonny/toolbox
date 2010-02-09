@@ -1,8 +1,8 @@
 ﻿/*
  * Assumptions:
  * 	Convex polygons
- * 	All polygons fulfill edges.length == points.length
- * 	The optimized cases assume you pass in the correct polygons
+ * 	The optimized cases assume you pass in the correct polygon types
+ *  TODO: Gather information for collision response
  */
 
 package toolbox {
@@ -34,6 +34,7 @@ package toolbox {
 				}
 				__axis.normalize();
 				
+				// BEGIN temporary debug drawing
 				var point:Vector2D;
 				var edge:Vector2D;
 				
@@ -50,6 +51,7 @@ package toolbox {
 				debug.graphics.moveTo( point.x + (edge.x / 2), point.y + (edge.y / 2) );
 				debug.graphics.lineTo( point.x + (edge.x / 2) + __axis.x * 100, point.y + (edge.y / 2) + __axis.y * 100 );
 				debug.graphics.lineStyle();
+				// END temporary debug drawing
 				
 				// project all polyA vectors onto axis
 				min = Number.MAX_VALUE;
@@ -74,7 +76,6 @@ package toolbox {
 				__polyBProjectionMin = min;
 				
 				// if the two projections don't overlap, no intersection
-//				trace( "projections: ", __polyAProjectionMax, ">", __polyBProjectionMin, "&&", __polyBProjectionMax, ">", __polyAProjectionMin, (__polyAProjectionMax > __polyBProjectionMin && __polyBProjectionMax > __polyAProjectionMin) );
 				if( !(__polyAProjectionMax > __polyBProjectionMin && __polyBProjectionMax > __polyAProjectionMin) ) {
 					return false;
 				}
@@ -97,9 +98,5 @@ package toolbox {
 		private static var __polyBProjectionMax:Number;
 		
 		private static var __axis:Vector2D;
-		
-		private static function projectToAxis():void {
-			
-		}
 	}
 }

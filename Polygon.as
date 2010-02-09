@@ -1,15 +1,17 @@
 ﻿/*
  * Assumptions:
  * 	This class currently supports only convex polygons!
- * 	The first point starts at 0,0 and the points are sequential around
- *  the edge of the polygon
- * TODO: add rotation, scale
+ * 	When building: 0,0 is the rotation point (and the first point if setting edges first) and the 
+ *  points are sequential around the edge of the polygon
+ * TODO: add scale
  * TODO: test speed of forEach on vectors
  */
 
 package toolbox {
 	
 	import flash.display.Sprite;
+	import flash.geom.Matrix;
+	import flash.geom.Point;
 	import flash.geom.Rectangle;
 	
 	public class Polygon {
@@ -32,17 +34,19 @@ package toolbox {
 		public function set x( newX:Number ):void {
 			var diff:Number = newX - __x;
 			__x = newX;
-			//edges.forEach( function callback(item:Vector2D, index:int, vector:Vector.<Vector2D>):void { item.x += diff; }, null );
+			// loop through and update the points (vertices)
 			points.forEach( function callback(item:Vector2D, index:int, vector:Vector.<Vector2D>):void { item.x += diff; }, null );
 		}
 		
 		public function set y( newY:Number ):void {
 			var diff:Number = newY - __y;
 			__y = newY;
-			//edges.forEach( function callback(item:Vector2D, index:int, vector:Vector.<Vector2D>):void { item.y += diff; }, null );
+			// loop through and update the points (vertices)
 			points.forEach( function callback(item:Vector2D, index:int, vector:Vector.<Vector2D>):void { item.y += diff; }, null );
 		}
 		
+		// There are some problems with this function.
+		// ie. the rotation point __x, __y is always going to be placed at the first point (__points[ 0 ])
 		public function constructFromEdges():void {
 			points[ 0 ].x = __x;
 			points[ 0 ].y = __y;
@@ -52,8 +56,9 @@ package toolbox {
 			}
 		}
 		
+		// generates edges from the points (vertices)
 		public function constructFromPoints():void {
-			for( var i:uint = 1 ; i < points.length - 1 ; i++ ) {
+			for( var i:uint = 0 ; i < points.length - 1 ; i++ ) {
 				edges[ i ].x = points[ i + 1 ].x - points[ i ].x;
 				edges[ i ].y = points[ i + 1 ].y - points[ i ].y;
 			}
@@ -66,11 +71,6 @@ package toolbox {
 			if ( clear ) { sprite.graphics.clear(); }
 			
 			// go to our initial position
-			//var posX:Number = __x;
-			//var posY:Number = __y;
-			//trace( "draw", x, y, posX, posY );
-			//sprite.graphics.moveTo( posX, posY );
-			//sprite.graphics.moveTo( __x, __y );
 			sprite.graphics.moveTo( points[ 0 ].x, points[ 0 ].y );
 			
 			// set up drawing
@@ -78,14 +78,26 @@ package toolbox {
 			
 			// draw the edges
 			for( var i:uint = 1 ; i < points.length ; i++ ) {
-				//posX += vectors[ i ].x;
-				//posY += vectors[ i ].y;
-				//sprite.graphics.lineTo( posX, posY );
-				//sprite.graphics.lineTo( edges[ i ].x, edges[ i ].y );
 				sprite.graphics.lineTo( points[ i ].x, points[ i ].y );
 			}
 			sprite.graphics.lineTo( points[ 0 ].x, points[ 0 ].y );
 			sprite.graphics.lineStyle();
+		}
+		
+		// rotates the polygon around it's rotation point
+		public function rotate( radians:Number ):void {
+			__mat.identity();
+			__mat.translate( -1 * __x, -1 * __y );
+			__mat.rotate( radians );
+			__mat.translate( __x, __y );
+			for( var i:uint = 0 ;  i < points.length ; i++ ) {
+				__pt.x = points[ i ].x;
+				__pt.y = points[ i ].y;
+				__pt = __mat.transformPoint( __pt );
+				points[ i ].x = __pt.x;
+				points[ i ].y = __pt.y;
+			}
+			constructFromPoints();
 		}
 		
 		public function reset():void {
@@ -95,16 +107,22 @@ package toolbox {
 			if( points.length > 0 ) {
 				points.splice( 0, points.length );
 			}
+			__x = 0;
+			__y = 0;
 		}
 		
 		public function destroy():void {
 			reset();
 			edges = null;
 			points = null;
+			__mat = null;
+			__pt = null;
 		}
 		
 		private var __x:Number = 0;
 		private var __y:Number = 0;
-		
+		// an effort to speed up rotations, create these only once
+		private var __mat:Matrix = new Matrix();
+		private var __pt:Point = new Point();
 	}
 }
