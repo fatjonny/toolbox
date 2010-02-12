@@ -106,6 +106,10 @@ package toolbox {
 				while ( x < width ) {
 					// find tile
 					tileToFind = tileNum + colCount + (rowCount * __tilesWide) + 1;
+					trace( "tileToFind", tileToFind );
+					if( tileToFind > (__tilesWide * __tilesHigh) || (offsetX + x >= __width) ) {
+						break;
+					}
 					tileName = __tiles[ (tileToFind-1) ][ "name" ];
 					
 					// if the tile is in the tilemap
