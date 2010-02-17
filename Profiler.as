@@ -1,9 +1,10 @@
 ﻿package toolbox 
 {
 	
-// Internal Player Actions (outlined here: http://livedocs.adobe.com/flex/3/html/help.html?content=profiler_3.html)
+// Internal Player Actions (outlined here: http://help.adobe.com/en_US/Flex/4.0/UsingFlashBuilder/WS6f97d7caa66ef6eb1e63e3d11b6c4d0d21-7edf.html)
 // [generate]		: The just-in-time (JIT) compiler generates AS3 machine code.
 // [mark]			: Flash Player marks live objects for garbage collection.
+// [newclass]		:
 // [pre-render]		: Flash Player prepares to render objects (including the geometry calculations and display list
 //						traversal that happens before rendering).
 // [reap]			: Flash Player reclaims DRC (deferred reference counting) objects.
@@ -33,14 +34,18 @@
 			
 			__deletedSampleIDs = new Vector.<Number>;
 			__leakedSamples = new Vector.<int>;
+			
+			__functions = { };
 		}
 		
 		public function start():void {
+			__startTime = getTimer();
 			startSampling();
 		}
 		
 		public function stop():void {
 			pauseSampling();
+			__stopTime = getTimer();
 			collect();
 			stopSampling();
 		}
@@ -49,8 +54,16 @@
 			var samples:Object = getSamples();
 			var nos:NewObjectSample;
 			var dos:DeleteObjectSample;
+			
+			var stackSize:int;
+			var functionName:String;
+			var i:int;
+			
+			var lastTime:Number;
+			
 			var s:Sample;
 			for each( s in samples ) {
+				if( isNaN( __startTimeMicro ) ) { __startTimeMicro = s.time; }
 				if( s is NewObjectSample ) {
 					nos = NewObjectSample( s );
 					__newSamples.push( nos );
@@ -66,9 +79,39 @@
 				else {
 					throw new Error( "Unknown object encountered. Not a Sample. " + s );
 				}
+				
+				__functions[ "__NO_STACK__" ] = { duration:0, cumulative:0 };
+				if( s.stack ) {
+					if( isNaN( lastTime ) ) { lastTime = s.time; }
+					stackSize = s.stack.length;
+					for( i = 0 ; i < stackSize ; i++ ) {
+						functionName = StackFrame( s.stack[ i ] ).name;
+						if( __functions[ functionName ] ) {
+							if( i == 0 ) {
+								__functions[ functionName ].duration += s.time - lastTime;
+							}
+							else {
+								__functions[ functionName ].cumulative += s.time - lastTime;
+							}
+						}
+						else {
+							if( i == 0 ) {
+								__functions[ functionName ] = { duration:(s.time - lastTime), cumulative:0 };
+							}
+							else {
+								__functions[ functionName ] = { duration:0, cumulative:(s.time - lastTime) };
+							}
+						}
+					}
+				}
+				else {
+					__functions[ "__NO_STACK__" ].duration += s.time - lastTime;
+				}
+				lastTime = s.time;
 			}
 			
-			var i:int;
+			__stopTimeMicro = lastTime;
+			
 			var j:int;
 			var found:Boolean;
 			var newLen:int = __newSamples.length;
@@ -94,6 +137,34 @@
 		public function numInternalSamples():int { return __internalSamples.length; }
 		public function numLeakedSamples():int { return __leakedSamples.length; }
 		
+		public function traceObject( obj:Object ):void {
+			trace( "=OBJECT=" );
+			var members:Object = getMemberNames( obj );
+			
+			for each( var qname:QName in members ) {
+				trace( qname.toString() );
+				if ( isGetterSetter( obj, qname ) ) {
+					trace( getGetterInvocationCount( obj, qname ), getSetterInvocationCount( obj, qname ) );
+				}
+				else {
+					// if -1, it is a class?
+					trace( getInvocationCount( obj, qname ) );
+				}
+			}
+		}
+		
+		public function traceFunctions():void {
+			trace( "=FUNCTIONS=" );
+			var total:Number = 0;
+			for ( var func:String in __functions ) {
+				trace( func, ":", __functions[ func ].duration, ":", __functions[ func ].cumulative );
+				total += __functions[ func ].duration;
+			}
+			trace( "Total (microseconds): ", total );
+			trace( "Other Total (microseconds): ", (__stopTimeMicro - __startTimeMicro) );
+			trace( "TimerTotal (miliseconds): ", (__stopTime - __startTime) );
+		}
+		
 		public function traceAverageFPS():void {
 			var len:int = __internalSamples.length;
 			var firstEnterFrame:Number = -1;
@@ -111,7 +182,7 @@
 			}
 			var microRunning:Number = lastEnterFrame - firstEnterFrame;
 			var msPerFrame:Number = microRunning / numEnterFrames / 1000;
-			trace( "msPerFrame: ", msPerFrame, "fps:", int(1000/msPerFrame) );
+			trace( "microRunning", microRunning, "msPerFrame: ", msPerFrame, "fps:", int(1000/msPerFrame) );
 		}
 		
 		public function traceInteral():void {
@@ -144,6 +215,13 @@
 			}
 			trace( "Total Leaked:", totalLeaked, System.totalMemory );
 		}
+		
+		private var __functions:Object;
+		
+		private var __startTime:int;
+		private var __stopTime:int;
+		private var __startTimeMicro:Number;
+		private var __stopTimeMicro:Number;
 		
 		private var __newSamples:Vector.<NewObjectSample>;
 		private var __deleteSamples:Vector.<DeleteObjectSample>;
