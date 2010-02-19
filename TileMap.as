@@ -79,8 +79,16 @@ package toolbox {
 				width = mapBitmapData.width;
 			}
 			
+			if( width > mapBitmapData.width ) {
+				width = mapBitmapData.width;
+			}
+			
 			// if no height, default to bitmap data height
 			if( height == 0 ) {
+				height = mapBitmapData.height;
+			}
+			
+			if( height > mapBitmapData.height ) {
 				height = mapBitmapData.height;
 			}
 			
@@ -106,7 +114,7 @@ package toolbox {
 				while ( x < width ) {
 					// find tile
 					tileToFind = tileNum + colCount + (rowCount * __tilesWide) + 1;
-					trace( "tileToFind", tileToFind );
+					//trace( "tileToFind", tileToFind );
 					if( tileToFind > (__tilesWide * __tilesHigh) || (offsetX + x >= __width) ) {
 						break;
 					}
