@@ -22,7 +22,7 @@ package toolbox {
 	
 	public class TileMap {
 		
-		public function TileMap() {}
+		public function TileMap() { __internalPoint = new Point();  }
 		
 		public function load( mapXML:XML, applicationDomain:ApplicationDomain ):void {
 			// clear or initialize
@@ -69,6 +69,19 @@ package toolbox {
 				
 				lastInsert++;
             }
+		}
+		
+		public function loadArray( objects:Array, attribute:String ):void {
+			var numTiles:uint = __tiles.length;
+			
+			for( var i:uint = 0 ; i < numTiles ; i++ ) {
+				if( __tiles[ i ][ attribute ] ) {
+					// sets __internalPoint
+					convertTileNumToXY( i );
+					objects.push( { name:__tiles[ i ][ attribute ], tile:i, x:__internalPoint.x, y:__internalPoint.y } );
+					trace( "loadArray", i, attribute, __tiles[ i ][ attribute ], __internalPoint.x, __internalPoint.y );
+				}
+			}
 		}
 		
 		// assumes that mapBitmap is lock()ed and will be unlock()ed sometime afterwards
@@ -169,6 +182,8 @@ package toolbox {
 		private var __domain:ApplicationDomain;
 		private var __XML:XML;
 		
+		private var __internalPoint:Point;
+		
 		private function convertXYToTileNum( x:int, y:int, offset:Object = null ):int {
 			
 			// ensure x,y are in the map
@@ -191,6 +206,13 @@ package toolbox {
 			
 			// calculate tile number
 			return (tileRow * __tilesWide) + tileColumn;
+		}
+		
+		// uses __internalPoint to avoid creating a new point every call
+		private function convertTileNumToXY( tileNum:int ):void {
+			var height:int = int(tileNum / __tilesWide);
+			__internalPoint.x = (tileNum - (height * __tilesWide)) * __tileWidth;
+			__internalPoint.y = height * __tileHeight;
 		}
 		
 		private function clearOrInitTilesArray():void {
