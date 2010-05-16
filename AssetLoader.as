@@ -14,6 +14,9 @@ package toolbox {
 		
 		// public function AssetLoader() {	}
 		
+		public static const ASSET_TYPE_URL:String 			= "url";
+		public static const ASSET_TYPE_INTO_DOMAIN:String	= "intoDomain";
+		
 		// used for text files
 		public static function loadURL( location:String, funcToCall:Function ):void {
 			trace( "loadURL", location );
@@ -43,6 +46,32 @@ package toolbox {
 			__loader.contentLoaderInfo.addEventListener( Event.UNLOAD, loaderUnload );
 			__loader.load( new URLRequest( location ), new LoaderContext( false, domain ) );
 		}
+		
+		// used for multiple files (supports URL and IntoDomain)
+		public static function bulkLoad( bundle:Array, onComplete:Function ):void {
+			var assetDef:Object;
+			
+			// done!
+			if( bundle.length == 0 ) { onComplete(); return; }
+			
+			// grab the first asset definition
+			assetDef = bundle.shift();
+				
+			// load the asset, and recurse
+			if( assetDef.type == ASSET_TYPE_URL ) {
+				loadURL( assetDef.location, 
+						 function ( e:Event ):void { assetDef.funcToCall( e ); bulkLoad( bundle, onComplete ); } );
+			}
+			else if( assetDef.type == ASSET_TYPE_INTO_DOMAIN ) {
+				loadIntoDomain( assetDef.location, 
+								function ( e:Event ):void { assetDef.funcToCall( e ); bulkLoad( bundle, onComplete ); },
+								assetDef.domain );
+			}
+		}
+		
+		//
+		// P R I V A T E
+		//
 		
 		private static var __loader:Loader;
 		private static var __urlLoader:URLLoader;
