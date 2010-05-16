@@ -78,7 +78,7 @@ package toolbox {
 				if( __tiles[ i ][ attribute ] ) {
 					// sets __internalPoint
 					convertTileNumToXY( i );
-					objects.push( { name:__tiles[ i ][ attribute ], tile:i, x:__internalPoint.x, y:__internalPoint.y } );
+					objects.push( { name:__tiles[ i ][ attribute ], tile:(i+1), x:__internalPoint.x, y:__internalPoint.y } );
 					trace( "loadArray", i, attribute, __tiles[ i ][ attribute ], __internalPoint.x, __internalPoint.y );
 				}
 			}
@@ -166,6 +166,8 @@ package toolbox {
 		public function get tileHeight():int	{ return __tileHeight; }
 		public function get tilesWide():int		{ return __tilesWide; }
 		public function get tilesHigh():int		{ return __tilesHigh; }
+		
+		public function get tilePrefix():String { return __tilePrefix; }
 		
 		// settings
 		private var __tileWidth:int;
