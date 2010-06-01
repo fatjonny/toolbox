@@ -13,6 +13,7 @@ package toolbox
 	import flash.geom.Point;
 	
 	import toolbox.Report;
+	import toolbox.MovieClipInfo;
 	
 	public class MovieClipHelper
 	{
@@ -21,6 +22,7 @@ package toolbox
 			__clip = movieClip;
 			__labels = __clip.currentLabels;
 			__writeStats = writeStats;
+			__info = new MovieClipInfo( __clip );
 		}
 		
 		public function convertFrameToBitmap( frame:Object, bitmapData:BitmapData, offset:Point = null,
@@ -47,8 +49,8 @@ package toolbox
 		public function convertAnimationToBitmap( frameLabelName:String, bitmapData:BitmapData, offset:Point = null,
 												  scale:Number = 1, rotation:Number = 0 ):void {
 			if( offset == null ) { offset = new Point(); }
-			var numFrames:int = countFrameLabelFrames( frameLabelName );
-			var startFrame:int = getFrameLabelFrame( frameLabelName );
+			var numFrames:int = __info.numFramesInLabel( frameLabelName );
+			var startFrame:int = __info.startFrameForLabel( frameLabelName );
 			for( var i:int = 0 ; i < numFrames ; i++ ) {
 				convertFrameToBitmap( startFrame + i, bitmapData, offset, scale, rotation );
 				offset.x += __clip.width;
@@ -67,36 +69,6 @@ package toolbox
 		private var __labels:Array;
 		private var __clip:MovieClip;
 		private var __writeStats:Boolean;
-		
-		// loop through frames until a new label is found
-		private function countFrameLabelFrames( frameLabelName:String ):int {
-			// look in the list of all labels for this one
-			for( var i:uint = 0 ; i < __labels.length ; i ++ ) {
-				// found it!
-				if( FrameLabel( __labels[ i ] ).name == frameLabelName ) {
-					// if it is the last label
-					if( i == __labels.length - 1 ) {
-						// make sure to include the last frame
-						return __clip.totalFrames - FrameLabel(__labels[ i ]).frame + 1;
-					}
-					else {
-						// count up to the next label
-						return FrameLabel(__labels[ i + 1 ]).frame - FrameLabel(__labels[ i ]).frame;
-					}
-				}
-			}
-			Report.error( "MovieClipHelper::countFrameLabelFrames " + __clip.name + " frame label " + frameLabelName + " not found." );
-			return 0;
-		}
-		
-		private function getFrameLabelFrame( frameLabelName:String ):int {
-			for( var i:uint = 0 ; i < __labels.length ; i++ ) {
-				if( FrameLabel( __labels[ i ] ).name == frameLabelName ) {
-					return FrameLabel( __labels[ i ] ).frame;
-				}
-			}
-			Report.error( "MovieClipHelper::getFrameLabelFrame " + __clip.name + " frame label " + frameLabelName + " not found." );
-			return 0;
-		}
+		private var __info:MovieClipInfo;
 	}
 }
