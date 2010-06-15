@@ -5,7 +5,12 @@
  * 		----------	----		-------
  *		buttonMode	(Boolean)	true
  * 		passEvent	(Boolean)	false
+ * 		passMC		(Boolean)	false
+ * 		passObj		(Object)	undefined
  * 		persist		(Boolean)	false
+ * 		normal		(String)	""
+ * 		hover		(String)	""
+ * 		disabled	(String)	""
  */
 
 package toolbox {
@@ -21,6 +26,8 @@ package toolbox {
 		//public function ButtonCreator() {}
 		
 		public static function CreateFromMovieClip( mc:MovieClip, func:Function, params:Object = null ):void {
+			if( FindMovieClipParams( mc ) ) { RemoveRegisteredMovieClip( mc ); }
+			
 			if( params == null ) { params = { }; }
 			params.mc = mc;
 			params.func = func;
@@ -28,32 +35,68 @@ package toolbox {
 			if( params.buttonMode == undefined || params.buttonMode ) {
 				mc.buttonMode = true;
 			}
+			mc.mouseChildren = false;
 			mc.addEventListener( MouseEvent.CLICK, MovieClipEvents );
+			if( params.normal ) {
+				mc.gotoAndStop( params.normal );
+			}
+			if( params.hover ) { 
+				mc.addEventListener( MouseEvent.MOUSE_OVER, MovieClipEvents );
+			}
 		}
 		
 		public static function RemoveRegisteredMovieClip( mc:MovieClip ):void {
-			FindMovieClipParams( mc, true );
+			var params:Object = FindMovieClipParams( mc, true );
+			if( params == null ) { return; }
+			
+			mc.buttonMode = false;
+			mc.removeEventListener( MouseEvent.CLICK, MovieClipEvents );
+			mc.removeEventListener( MouseEvent.MOUSE_OVER, MovieClipEvents );
+			mc.removeEventListener( MouseEvent.MOUSE_OUT, MovieClipEvents );
+			if( params.normal ) {
+				mc.gotoAndStop( params.normal );
+			}
 		}
 		
 		private static var __registeredButtons:Array = [];
 		
 		private static function MovieClipEvents( e:MouseEvent ):void {
-			var params:Object = FindMovieClipParams( MovieClip( e.currentTarget ) );
+			var mc:MovieClip = MovieClip( e.currentTarget );
+			var params:Object = FindMovieClipParams( mc );
 			
 			if( params == null ) {
-				throw new Error( "Ack! ButtonCreator MovieClipEvents called erroneously on " + e.currentTarget );
+				throw new Error( "Ack! ButtonCreator MovieClipEvents called erroneously on " + mc );
 			}
 			
-			if( !params.persist ) {
-				e.currentTarget.buttonMode = false;
-				e.currentTarget.removeEventListener( MouseEvent.CLICK, MovieClipEvents );
-			}
+			if( e.type == MouseEvent.CLICK ) {
+				if( !params.persist ) {
+					RemoveRegisteredMovieClip( mc );
+				}
 			
-			if( params.passEvent ) {
-				params.func( e );
+				if( params.passEvent ) {
+					params.func( e );
+				}
+				else if( params.passMC ) {
+					params.func( params.mc );
+				}
+				else if( params.passObj ) {
+					params.func( params.passObj );
+				}
+				else {
+					params.func();
+				}
 			}
-			else {
-				params.func();
+			else if( e.type == MouseEvent.MOUSE_OVER ) {
+				if( params.hover ) {
+					mc.gotoAndPlay( params.hover );
+					mc.addEventListener( MouseEvent.MOUSE_OUT, MovieClipEvents );
+				}
+			}
+			else if( e.type == MouseEvent.MOUSE_OUT ) {
+				if( params.normal ) {
+					mc.gotoAndPlay( params.normal );
+					mc.removeEventListener( MouseEvent.MOUSE_OUT, MovieClipEvents );
+				}
 			}
 		}
 		
@@ -61,10 +104,13 @@ package toolbox {
 			var i:uint = 0;
 			var params:Object;
 			var numButtons:uint = __registeredButtons.length;
+			
+			if( forceRemove ) { trace( "FindMovieClipParams with forceRemove:", mc ); }
+			
 			for( ; i < numButtons ; i++ ) {
 				if( __registeredButtons[ i ].mc == mc ) {
 					params = __registeredButtons[ i ];
-					if( !params.persist || forceRemove ) {
+					if( forceRemove ) {
 						__registeredButtons.splice( i, 1 );
 					}
 					return params;
