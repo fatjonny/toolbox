@@ -4,6 +4,7 @@
  * 		param name	type		default
  * 		----------	----		-------
  *		buttonMode	(Boolean)	true
+ * 		children	(Boolean)	false
  * 		passEvent	(Boolean)	false
  * 		passMC		(Boolean)	false
  * 		passObj		(Object)	undefined
@@ -26,6 +27,7 @@ package toolbox {
 		//public function ButtonCreator() {}
 		
 		public static function CreateFromMovieClip( mc:MovieClip, func:Function, params:Object = null ):void {
+			if( mc == null ) { throw new Error( "CreateFromMovieClip error! null passed as a MovieClip" ); }
 			if( FindMovieClipParams( mc ) ) { RemoveRegisteredMovieClip( mc ); }
 			
 			if( params == null ) { params = { }; }
@@ -36,6 +38,8 @@ package toolbox {
 				mc.buttonMode = true;
 			}
 			mc.mouseChildren = false;
+			mc.mouseEnabled = true;
+			if( params.children ) { mc.mouseChildren = true; }
 			mc.addEventListener( MouseEvent.CLICK, MovieClipEvents );
 			if( params.normal ) {
 				mc.gotoAndStop( params.normal );
