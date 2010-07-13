@@ -60,11 +60,11 @@ package toolbox {
 			// load the asset, and recurse
 			if( assetDef.type == ASSET_TYPE_URL ) {
 				loadURL( assetDef.location, 
-						 function ( e:Event ):void { assetDef.funcToCall( e ); bulkLoad( bundle, onComplete ); } );
+						 function ( e:Event ):void { assetDef.funcToCall( e, assetDef.paramObj ); bulkLoad( bundle, onComplete ); } );
 			}
 			else if( assetDef.type == ASSET_TYPE_INTO_DOMAIN ) {
 				loadIntoDomain( assetDef.location, 
-								function ( e:Event ):void { assetDef.funcToCall( e ); bulkLoad( bundle, onComplete ); },
+								function ( e:Event ):void { assetDef.funcToCall( e, assetDef.paramObj ); bulkLoad( bundle, onComplete ); },
 								assetDef.domain );
 			}
 		}
