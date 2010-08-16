@@ -1,0 +1,106 @@
+/*
+ * 
+ */
+
+package toolbox {
+	
+	import flash.display.MovieClip;
+	import flash.events.MouseEvent;
+	import flash.geom.Rectangle;
+	
+	public class DraggableCreator {
+		
+		// public function DraggableCreator() {}
+		
+		public static function createDraggable( draggableMC:MovieClip, validHitAreas:Array, downFunc:Function, upFunc:Function, mostArea:Boolean = true ):void {
+			draggableMC.addEventListener( MouseEvent.MOUSE_DOWN, createDraggableDown );
+			__draggable.push( { mc:draggableMC, hitAreas:validHitAreas, down:downFunc, up:upFunc, mostArea:mostArea } );
+		}
+		
+		public static function removeDraggable( draggableMC:MovieClip ):void {
+			if( __currentDraggable ) {
+				// FILL IN!
+			}
+			
+			for( var i:uint = 0 ; i < __draggable.length ; i++ ) {
+				if( __draggable[ i ].mc == draggableMC ) {
+					draggableMC.removeEventListener( MouseEvent.MOUSE_DOWN, createDraggableDown );
+					__draggable.splice( i, 1 );
+					return;
+				}
+			}
+		}
+		
+		public static function removeAllDraggable():void {
+			while( __draggable.length ) {
+				__draggable[ 0 ].mc.removeEventListener( MouseEvent.MOUSE_DOWN, createDraggableDown );
+				__draggable.splice( 0, 1 );
+			}
+		}
+		
+		public static function disableAll():void {
+			for( var i:uint = 0 ; i < __draggable.length ; i++ ) {
+				__draggable[ i ].mc.removeEventListener( MouseEvent.MOUSE_DOWN, createDraggableDown );
+			}
+		}
+		
+		public static function enableAll():void {
+			for( var i:uint = 0 ; i < __draggable.length ; i++ ) {
+				if( !__draggable[ i ].mc.hasEventListener( MouseEvent.MOUSE_DOWN ) ) {
+					__draggable[ i ].mc.addEventListener( MouseEvent.MOUSE_DOWN, createDraggableDown );
+				}
+			}
+		}
+		
+		private static var __draggable:Array = [];
+		private static var __currentDraggable:Object;
+		
+		private static function findDraggable( mc:MovieClip ):Object {
+			for( var i:uint = 0 ; i < __draggable.length ; i++ ) {
+				if( __draggable[ i ].mc == mc ) {
+					return __draggable[ i ];
+				}
+			}
+			return null;
+		}
+		
+		private static function createDraggableDown( e:MouseEvent ):void {
+			var mc:MovieClip = e.currentTarget as MovieClip;
+			__currentDraggable = findDraggable( mc );
+			mc.startDrag();
+			mc.removeEventListener( MouseEvent.MOUSE_DOWN, createDraggableDown );
+			mc.addEventListener( MouseEvent.MOUSE_UP, dropDraggable );
+			__currentDraggable.down( mc );
+		}
+		
+		private static function dropDraggable( e:MouseEvent ):void {
+			var mostArea:Boolean = __currentDraggable.mostArea;
+			var bestFit:MovieClip;
+			var bestFitArea:Number = 0;
+			var dragMC:MovieClip = __currentDraggable.mc as MovieClip;
+			for( var i:uint = 0 ; i < __currentDraggable.hitAreas.length ; i++ ) {
+				var currentTest:MovieClip = __currentDraggable.hitAreas[ i ];
+				if( dragMC.hitTestObject( currentTest ) ) {
+					if( !mostArea ) {
+						bestFit = currentTest;
+						break;
+					}
+					else {
+						var srcRect:Rectangle = dragMC.getBounds( currentTest.stage );
+						var testRect:Rectangle = currentTest.getBounds( currentTest.stage );
+						var intersection:Rectangle = srcRect.intersection( testRect );
+						var area:Number = intersection.width * intersection.height;
+						if( area > bestFitArea ) {
+							bestFit = currentTest;
+							bestFitArea	= area;
+						}
+					}
+				}
+			}
+			__currentDraggable.up( __currentDraggable, bestFit );
+			dragMC.stopDrag();
+			dragMC.removeEventListener( MouseEvent.MOUSE_UP, dropDraggable );
+			__currentDraggable = null;
+		}
+	}
+}
