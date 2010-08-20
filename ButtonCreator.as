@@ -54,6 +54,7 @@ package toolbox {
 			if( params == null ) { return; }
 			
 			mc.buttonMode = false;
+			mc.mouseChildren = true;
 			mc.removeEventListener( MouseEvent.CLICK, MovieClipEvents );
 			mc.removeEventListener( MouseEvent.MOUSE_OVER, MovieClipEvents );
 			mc.removeEventListener( MouseEvent.MOUSE_OUT, MovieClipEvents );
