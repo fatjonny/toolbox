@@ -10,7 +10,9 @@
  * 		passObj		(Object)	undefined
  * 		persist		(Boolean)	false
  * 		normal		(String)	""
+ * 		normalFunc	(Function)	null
  * 		hover		(String)	""
+ * 		hoverFunc	(Function)	null
  * 		disabled	(String)	""
  */
 
@@ -44,7 +46,10 @@ package toolbox {
 			if( params.normal ) {
 				mc.gotoAndStop( params.normal );
 			}
-			if( params.hover ) { 
+			if( params.normalFunc ) { 
+				params.normalFunc( mc );
+			}
+			if( params.hover || params.hoverFunc ) { 
 				mc.addEventListener( MouseEvent.MOUSE_OVER, MovieClipEvents );
 			}
 		}
@@ -60,6 +65,9 @@ package toolbox {
 			mc.removeEventListener( MouseEvent.MOUSE_OUT, MovieClipEvents );
 			if( params.normal ) {
 				mc.gotoAndStop( params.normal );
+			}
+			if( params.normalFunc ) {
+				params.normalFunc( mc );
 			}
 		}
 		
@@ -96,11 +104,17 @@ package toolbox {
 					mc.gotoAndPlay( params.hover );
 					mc.addEventListener( MouseEvent.MOUSE_OUT, MovieClipEvents );
 				}
+				if( params.hoverFunc ) {
+					params.hoverFunc( mc );
+				}
 			}
 			else if( e.type == MouseEvent.MOUSE_OUT ) {
 				if( params.normal ) {
 					mc.gotoAndPlay( params.normal );
 					mc.removeEventListener( MouseEvent.MOUSE_OUT, MovieClipEvents );
+				}
+				if( params.normalFunc ) {
+					params.normalFunc( mc );
 				}
 			}
 		}
