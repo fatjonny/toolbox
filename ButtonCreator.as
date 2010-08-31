@@ -98,6 +98,7 @@ package toolbox {
 				else {
 					params.func();
 				}
+				SoundHelper.playSound( "ClickSound" );
 			}
 			else if( e.type == MouseEvent.MOUSE_OVER ) {
 				if( params.hover ) {
@@ -107,6 +108,7 @@ package toolbox {
 				if( params.hoverFunc ) {
 					params.hoverFunc( mc );
 				}
+				SoundHelper.playSound( "ButtonHover" );
 			}
 			else if( e.type == MouseEvent.MOUSE_OUT ) {
 				if( params.normal ) {

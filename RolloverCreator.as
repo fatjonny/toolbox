@@ -12,9 +12,10 @@ package toolbox {
 		
 		// public function RolloverCreator() {}
 		
-		public static function createRollover( rollover:MovieClip, toShow:MovieClip, persist:Boolean = false, doneFunc:Function = null ):void {
+		public static function createRollover( rollover:MovieClip, toShow:MovieClip, persist:Boolean = false, doneFunc:Function = null, hoverMC:MovieClip = null ):void {
 			rollover.addEventListener( MouseEvent.MOUSE_OVER, showRollover );
-			__rollovers.push( { mc:rollover, toShow:toShow, persist:persist, done:doneFunc } );
+			if( !hoverMC ) { hoverMC = rollover; }
+			__rollovers.push( { mc:rollover, hoverMC:hoverMC, toShow:toShow, persist:persist, done:doneFunc } );
 		}
 		
 		public static function removeAll():void {
@@ -26,9 +27,12 @@ package toolbox {
 		
 		private static var __rollovers:Array = [];
 		
-		private static function findRollover( mc:MovieClip ):Object {
+		private static function findRollover( mc:MovieClip, hoverMC:Boolean = false ):Object {
 			for( var i:uint = 0 ; i < __rollovers.length ; i++ ) {
-				if( __rollovers[ i ].mc == mc ) {
+				if( !hoverMC && __rollovers[ i ].mc == mc ) {
+					return __rollovers[ i ];
+				}
+				else if( __rollovers[ i ].hoverMC == mc ) {
 					return __rollovers[ i ];
 				}
 			}
@@ -38,15 +42,15 @@ package toolbox {
 		private static function showRollover( e:MouseEvent ):void {
 			var obj:Object = findRollover( e.currentTarget as MovieClip );
 			var mc:MovieClip = obj.mc;
-			mc.addEventListener( MouseEvent.MOUSE_OUT, hideRollover );
+			obj.hoverMC.addEventListener( MouseEvent.MOUSE_OUT, hideRollover );
 			obj.toShow.visible = true;
 		}
 		
 		private static function hideRollover( e:MouseEvent ):void {
-			var obj:Object = findRollover( e.currentTarget as MovieClip );
+			var obj:Object = findRollover( e.currentTarget as MovieClip, true );
 			var mc:MovieClip = obj.mc;
 			obj.toShow.visible = false;
-			mc.removeEventListener( MouseEvent.MOUSE_OUT, hideRollover );
+			obj.hoverMC.removeEventListener( MouseEvent.MOUSE_OUT, hideRollover );
 			if( !obj.persist ) {
 				mc.removeEventListener( MouseEvent.MOUSE_OVER, showRollover );
 			}
