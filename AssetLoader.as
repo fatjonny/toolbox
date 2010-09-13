@@ -64,7 +64,7 @@ package toolbox {
 			}
 			else if( assetDef.type == ASSET_TYPE_INTO_DOMAIN ) {
 				loadIntoDomain( assetDef.location, 
-								function ( e:Event ):void { assetDef.funcToCall( e, assetDef.paramObj ); bulkLoad( bundle, onComplete ); },
+								function ( e:Event, content:Object ):void { assetDef.paramObj.content = content; assetDef.funcToCall( e, assetDef.paramObj ); bulkLoad( bundle, onComplete ); },
 								assetDef.domain );
 			}
 		}
@@ -77,7 +77,7 @@ package toolbox {
 		private static var __urlLoader:URLLoader;
 		private static var __func:Function;
 		
-		private static function loaderComplete( e:Event ):void { trace( "loaderComplete", e ); destroy(); __func( e ); }
+		private static function loaderComplete( e:Event ):void { trace( "loaderComplete", e ); var content:Object = e.target.loader.content; destroy(); __func( e, content ); }
 		
 		private static function urlLoaderComplete( e:Event ):void { trace( "urlLoaderComplete", e ); destroyURLLoader(); __func( e ); }
 		
