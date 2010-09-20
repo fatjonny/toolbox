@@ -12,6 +12,7 @@
  * 		normal		(String)	""
  * 		normalFunc	(Function)	null
  * 		hover		(String)	""
+ *		hoverSound	(String)	""
  * 		hoverFunc	(Function)	null
  * 		disabled	(String)	""
  */
@@ -85,7 +86,10 @@ package toolbox {
 				if( !params.persist ) {
 					RemoveRegisteredMovieClip( mc );
 				}
-			
+				
+				// will get overridden by any sounds in params.func
+				SoundHelper.playSound( "ClickSound" );
+				
 				if( params.passEvent ) {
 					params.func( e );
 				}
@@ -98,7 +102,6 @@ package toolbox {
 				else {
 					params.func();
 				}
-				SoundHelper.playSound( "ClickSound" );
 			}
 			else if( e.type == MouseEvent.MOUSE_OVER ) {
 				if( params.hover ) {
@@ -108,7 +111,12 @@ package toolbox {
 				if( params.hoverFunc ) {
 					params.hoverFunc( mc );
 				}
-				SoundHelper.playSound( "ButtonHover" );
+				if( params.hoverSound ) {
+					SoundHelper.playSound( params.hoverSound );
+				}
+				else {
+					SoundHelper.playSound( "ButtonHover" );
+				}
 			}
 			else if( e.type == MouseEvent.MOUSE_OUT ) {
 				if( params.normal ) {
