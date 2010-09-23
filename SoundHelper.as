@@ -1,5 +1,10 @@
 /*
- * 
+ * Sound Object Defaults
+ * ---------------------
+ *  loop:Boolean	(false)
+ *  channel:String	("main")
+ *  startAt:int		(0)
+ *  onLoop:Function	()
  */
 
 package toolbox {
@@ -23,72 +28,124 @@ package toolbox {
 			else {
 				volTransform = new SoundTransform(__oldVolume, 0);
 			}
-			__frontChannel.soundTransform = volTransform;
-			__ambientChannel.soundTransform = volTransform;
 			
 			SoundMixer.soundTransform = volTransform;
 		}
 		
-		public static function playSound( sndName:String ):void {
-			if( __frontChannel != null ) {
-				__frontChannel.stop();
-			}
-			if( !__domain.hasDefinition( sndName ) ) { 
-				trace( "WARNING: unknown sound in playSound:", sndName );
-				return;
-			}
-			__frontChannel = Sound( new (__domain.getDefinition( sndName ) as Class) ).play(0);
+		public static function playSound( name:String, params:Object = null ):void {
+			if( params == null ) { params = {}; }
 			
-			if( __mute ) {
-				var volTransform:SoundTransform;
-				volTransform = new SoundTransform(0, 0);
-				__frontChannel.soundTransform = volTransform;
+			// set defaults
+			if( !params.channel ) { params.channel = "main"; }
+			
+			// clear / initialize channel
+			if( !__channel[ params.channel ] ) { initializeChannel( params.channel ); }
+			else { stopChannel( params.channel ); }
+			
+			if( !__sound[ name ] ) {
+				if( !__domain.hasDefinition( name ) ) {
+					trace( "WARNING: unknown sound in playSound:", name );
+					return;
+				}
+				var soundClass:Class = __domain.getDefinition( name ) as Class;
+				__sound[ name ] = Sound( new soundClass );
+			}
+			
+			__channel[ params.channel ].sound = name;
+			
+			if( params.startAt ) {
+				__channel[ params.channel ].startAt = params.startAt;
+			}
+			
+			if( params.onLoop ) {
+				__channel[ params.channel ].onLoop = params.onLoop;
+			}
+			
+			__channel[ params.channel ].content = __sound[ __channel[ params.channel ].sound ].play( __channel[ params.channel ].startAt );
+			
+			if( params.loop ) {
+				__channel[ params.channel ].loop = params.loop;
+				__channel[ params.channel ].content.addEventListener( Event.SOUND_COMPLETE, loopChannel );
+			}
+			else {
+				__channel[ params.channel ].content.addEventListener( Event.SOUND_COMPLETE, clearChannel );
 			}
 		}
 		
-		public static function playAmbient( ambName:String ):void {
-			if( __ambientChannel != null ) {
-				__ambientChannel.stop();
-				__ambientChannel.removeEventListener( Event.SOUND_COMPLETE, loopAmbient );
+		public static function stopChannel( name:String ):void {
+			if( __channel[ name ].loop == true ) {
+				__channel[ name ].loop = false;
+				if( __channel[ name ].content ) {
+					__channel[ name ].content.removeEventListener( Event.SOUND_COMPLETE, loopChannel );
+				}
 			}
-			if( !ambName ) { return; }
-			__ambientName = ambName;
-			__ambientChannel = Sound( new (__domain.getDefinition( ambName ) as Class) ).play(0);
-			__ambientChannel.addEventListener( Event.SOUND_COMPLETE, loopAmbient );
-			
-			if( __mute ) {
-				var volTransform:SoundTransform;
-				volTransform = new SoundTransform(0, 0);
-				__ambientChannel.soundTransform = volTransform;
+			else {
+				if( __channel[ name ].content ) {
+					__channel[ name ].content.removeEventListener( Event.SOUND_COMPLETE, clearChannel );
+				}
+			}
+			if( __channel[ name ].content ) {
+				__channel[ name ].content.stop();
+				__channel[ name ].content = null;
+			}
+			__channel[ name ].sound = null;
+			__channel[ name ].startAt = 0;
+		}
+		
+		public static function pauseChannel( name:String ):void {
+			if( __channel[ name ] && __channel[ name ].content ) {
+				__channel[ name ].pausedAt = __channel[ name ].content.position;
+				__channel[ name ].content.stop();
 			}
 		}
 		
-		public static function stopAmbient():void {
-			__ambientChannel.stop();
-			__ambientChannel.removeEventListener( Event.SOUND_COMPLETE, loopAmbient );
-			__ambientChannel = null;
-		}
-		
-		private static function loopAmbient( e:Event ):void {
-			__ambientChannel.stop();
-			__ambientChannel.removeEventListener( Event.SOUND_COMPLETE, loopAmbient );
-			__ambientChannel = Sound( new (__domain.getDefinition( __ambientName ) as Class) ).play(0);
-			__ambientChannel.addEventListener( Event.SOUND_COMPLETE, loopAmbient );
+		public static function playChannel( name:String ):void {
+			if( !__channel[ name ] ) { return; }
 			
-			if( __mute ) {
-				var volTransform:SoundTransform;
-				volTransform = new SoundTransform(0, 0);
-				__ambientChannel.soundTransform = volTransform;
+			if( __channel[ name ].pausedAt ) {
+				__channel[ name ].content = __sound[ __channel[ name ].sound ].play( __channel[ name ].pausedAt );
+				__channel[ name ].pausedAt = null;
+			}
+			else if( __channel[ name ].sound ) {
+				__channel[ name ].content = __sound[ __channel[ name ].sound ].play( __channel[ name ].startAt );
 			}
 		}
+		
+		private static var __channel:Object = {};
+		private static var __mute:Boolean = false;
+		private static var __sound:Object = {};
 		
 		private static var __oldVolume:Number;
 		private static var __domain:ApplicationDomain = ApplicationDomain.currentDomain;
-		private static var __playing:Array = [];
-		private static var __sounds:Object = {};
-		private static var __mute:Boolean = false;
-		private static var __ambientChannel:SoundChannel;
-		private static var __ambientName:String;
-		private static var __frontChannel:SoundChannel;
+		
+		private static function initializeChannel( name:String ):void {
+			__channel[ name ] = {};
+			__channel[ name ].loop = false;
+			__channel[ name ].startAt = 0;
+		}
+		
+		private static function loopChannel( e:Event ):void {
+			var channelName:String = findChannelFromContent( SoundChannel( e.currentTarget ) );
+			__channel[ channelName ].content.removeEventListener( Event.SOUND_COMPLETE, loopChannel );
+			__channel[ channelName ].content = __sound[ __channel[ channelName ].sound ].play( __channel[ channelName ].startAt );
+			__channel[ channelName ].content.addEventListener( Event.SOUND_COMPLETE, loopChannel );
+			if( __channel[ channelName ].onLoop ) {
+				__channel[ channelName ].onLoop();
+			}
+		}
+		
+		private static function clearChannel( e:Event ):void {
+			var channelName:String = findChannelFromContent( SoundChannel( e.currentTarget ) );
+			stopChannel( channelName );
+		}
+		
+		private static function findChannelFromContent( soundChannel:SoundChannel ):String {
+			for( var channelName:String in __channel ) {
+				if( __channel[ channelName ].content == soundChannel ) {
+					return channelName;
+				}
+			}
+			return "";
+		}
 	}
 }
