@@ -73,6 +73,8 @@ package toolbox {
 		}
 		
 		public static function stopChannel( name:String ):void {
+			if( !__channel[ name ] ) { return; }
+			
 			if( __channel[ name ].loop == true ) {
 				__channel[ name ].loop = false;
 				if( __channel[ name ].content ) {
@@ -93,6 +95,8 @@ package toolbox {
 		}
 		
 		public static function pauseChannel( name:String ):void {
+			if( !__channel[ name ] ) { return; }
+			
 			if( __channel[ name ] && __channel[ name ].content ) {
 				__channel[ name ].pausedAt = __channel[ name ].content.position;
 				__channel[ name ].content.stop();
