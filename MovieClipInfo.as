@@ -27,6 +27,10 @@ package toolbox
 		// if using with addFrameScript remember to subtract 1
 		public function startFrameForLabel( labelName:String ):int { return __frameInfo[ labelName ].startFrame; }
 		
+		public function addScript( movieClip:MovieClip, labelName:String, funcToCall:Function ):void {
+			movieClip.addFrameScript( startFrameForLabel( labelName )-1, funcToCall );
+		}
+		
 		private var __name:String;
 		private var __names:Array;
 		private var __frameInfo:Object;
