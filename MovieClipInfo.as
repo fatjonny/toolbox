@@ -31,6 +31,15 @@ package toolbox
 			movieClip.addFrameScript( startFrameForLabel( labelName )-1, funcToCall );
 		}
 		
+		public function hasLabel( label:String ):Boolean {
+			for( var i:uint = 0 ; i < __names.length ; i++ ) {
+				if( __names[ i ] == label ) {
+					return true;
+				}
+			}
+			return false;
+		}
+		
 		private var __name:String;
 		private var __names:Array;
 		private var __frameInfo:Object;
