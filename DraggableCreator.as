@@ -12,9 +12,16 @@ package toolbox {
 		
 		// public function DraggableCreator() {}
 		
-		public static function createDraggable( draggableMC:MovieClip, validHitAreas:Array, downFunc:Function, upFunc:Function, mostArea:Boolean = true ):void {
+		public static function createDraggable( draggableMC:MovieClip, validHitAreas:Array, downFunc:Function, upFunc:Function, mostArea:Boolean = true, snapBack:Boolean = false ):void {
 			draggableMC.addEventListener( MouseEvent.MOUSE_DOWN, createDraggableDown );
-			__draggable.push( { mc:draggableMC, hitAreas:validHitAreas, down:downFunc, up:upFunc, mostArea:mostArea } );
+			__draggable.push( { mc:draggableMC, hitAreas:validHitAreas, down:downFunc, up:upFunc, mostArea:mostArea, snapBack:snapBack } );
+			
+			if( snapBack ) {
+				draggableMC.dragOrigX = draggableMC.x;
+				draggableMC.dragOrigY = draggableMC.y;
+				draggableMC.dragScaleX = draggableMC.scaleX;
+				draggableMC.dragScaleY = draggableMC.scaleY;
+			}
 		}
 		
 		public static function removeDraggable( draggableMC:MovieClip ):void {
@@ -96,6 +103,12 @@ package toolbox {
 						}
 					}
 				}
+			}
+			if( __currentDraggable.snapBack && !bestFit ) {
+				__currentDraggable.mc.x = __currentDraggable.mc.dragOrigX;
+				__currentDraggable.mc.y = __currentDraggable.mc.dragOrigY;
+				__currentDraggable.mc.scaleX = __currentDraggable.mc.dragScaleX;
+				__currentDraggable.mc.scaleY = __currentDraggable.mc.dragScaleY;
 			}
 			__currentDraggable.up( __currentDraggable, bestFit );
 			dragMC.stopDrag();
