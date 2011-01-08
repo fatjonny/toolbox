@@ -87,7 +87,7 @@ package toolbox {
 			var dragMC:MovieClip = __currentDraggable.mc as MovieClip;
 			for( var i:uint = 0 ; i < __currentDraggable.hitAreas.length ; i++ ) {
 				var currentTest:MovieClip = __currentDraggable.hitAreas[ i ];
-				if( dragMC.hitTestObject( currentTest ) ) {
+				if( currentTest && dragMC.hitTestObject( currentTest ) ) {
 					if( !mostArea ) {
 						bestFit = currentTest;
 						break;
