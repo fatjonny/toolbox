@@ -110,6 +110,7 @@ package toolbox {
 				__currentDraggable.mc.scaleX = __currentDraggable.mc.dragScaleX;
 				__currentDraggable.mc.scaleY = __currentDraggable.mc.dragScaleY;
 			}
+			removeDraggable( __currentDraggable.mc );
 			__currentDraggable.up( __currentDraggable, bestFit );
 			dragMC.stopDrag();
 			dragMC.removeEventListener( MouseEvent.MOUSE_UP, dropDraggable );
