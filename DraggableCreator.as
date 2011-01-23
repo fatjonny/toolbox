@@ -12,9 +12,9 @@ package toolbox {
 		
 		// public function DraggableCreator() {}
 		
-		public static function createDraggable( draggableMC:MovieClip, validHitAreas:Array, downFunc:Function, upFunc:Function, mostArea:Boolean = true, snapBack:Boolean = false ):void {
+		public static function createDraggable( draggableMC:MovieClip, validHitAreas:Array, downFunc:Function, upFunc:Function, mostArea:Boolean = true, snapBack:Boolean = false, lockCenter:Boolean = false ):void {
 			draggableMC.addEventListener( MouseEvent.MOUSE_DOWN, createDraggableDown );
-			__draggable.push( { mc:draggableMC, hitAreas:validHitAreas, down:downFunc, up:upFunc, mostArea:mostArea, snapBack:snapBack } );
+			__draggable.push( { mc:draggableMC, hitAreas:validHitAreas, down:downFunc, up:upFunc, mostArea:mostArea, snapBack:snapBack, lockCenter:lockCenter } );
 			
 			if( snapBack ) {
 				draggableMC.dragOrigX = draggableMC.x;
@@ -74,7 +74,8 @@ package toolbox {
 		private static function createDraggableDown( e:MouseEvent ):void {
 			var mc:MovieClip = e.currentTarget as MovieClip;
 			__currentDraggable = findDraggable( mc );
-			mc.startDrag();
+			if( !__currentDraggable.lockCenter ) { __currentDraggable.lockCenter = false; }
+			mc.startDrag( __currentDraggable.lockCenter );
 			mc.removeEventListener( MouseEvent.MOUSE_DOWN, createDraggableDown );
 			mc.addEventListener( MouseEvent.MOUSE_UP, dropDraggable );
 			__currentDraggable.down( mc );
