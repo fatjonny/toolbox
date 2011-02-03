@@ -23,12 +23,17 @@ package toolbox
 		public function labelNames():Array { return __names; }
 		public function mcName():String { return __name; }
 		public function numLabels():uint { return __names.length; }
-		public function numFramesInLabel( frameName:String ):int { return __frameInfo[ frameName ].numFrames; }
+		public function numFramesInLabel( labelName:String ):int { return __frameInfo[ labelName ].numFrames; }
 		// if using with addFrameScript remember to subtract 1
 		public function startFrameForLabel( labelName:String ):int { return __frameInfo[ labelName ].startFrame; }
 		
-		public function addScript( movieClip:MovieClip, labelName:String, funcToCall:Function ):void {
-			movieClip.addFrameScript( startFrameForLabel( labelName )-1, funcToCall );
+		public function addScript( movieClip:MovieClip, labelName:String, funcToCall:Function, endOfLabel:Boolean = false ):void {
+			if( endOfLabel == false ) {
+				movieClip.addFrameScript( startFrameForLabel( labelName ) - 1, funcToCall );
+			}
+			else {
+				movieClip.addFrameScript( startFrameForLabel( labelName ) + numFramesInLabel( labelName ) - 2, funcToCall );
+			}
 		}
 		
 		public function hasLabel( label:String ):Boolean {
