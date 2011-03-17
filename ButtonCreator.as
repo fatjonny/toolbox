@@ -104,9 +104,9 @@ package toolbox {
 				}
 			}
 			else if( e.type == MouseEvent.MOUSE_OVER ) {
+				mc.addEventListener( MouseEvent.MOUSE_OUT, MovieClipEvents );
 				if( params.hover ) {
 					mc.gotoAndPlay( params.hover );
-					mc.addEventListener( MouseEvent.MOUSE_OUT, MovieClipEvents );
 				}
 				if( params.hoverFunc ) {
 					params.hoverFunc( mc );
@@ -119,9 +119,9 @@ package toolbox {
 				}
 			}
 			else if( e.type == MouseEvent.MOUSE_OUT ) {
+				mc.removeEventListener( MouseEvent.MOUSE_OUT, MovieClipEvents );
 				if( params.normal ) {
 					mc.gotoAndPlay( params.normal );
-					mc.removeEventListener( MouseEvent.MOUSE_OUT, MovieClipEvents );
 				}
 				if( params.normalFunc ) {
 					params.normalFunc( mc );
