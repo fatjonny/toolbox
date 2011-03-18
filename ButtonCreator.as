@@ -1,6 +1,4 @@
 /*
- * buttonMode is assumed to be true unless specifically set false
- * 
  * 		param name	type		default
  * 		----------	----		-------
  *		buttonMode	(Boolean)	true
@@ -20,10 +18,7 @@
 package toolbox {
 	
 	import flash.display.MovieClip;
-	import flash.events.Event;
 	import flash.events.MouseEvent;
-	
-	import toolbox.EventHandler;
 	
 	public class ButtonCreator {
 		
