@@ -1,62 +1,156 @@
 /*
  * 
+ * 		elements of a dropdown MovieClip
+ * 		--------------------------------
+ * 		slot:		MovieClip that displays current selection
+ * 					* tf: Textfield to fill in current selection text
+ * 					* bg: MovieClip with frames for state (wrong, right, normal, hover)
+ * 		option:		MovieClips that display possible options
+ * 					* tf: TextField with option text
+ * 					* bg: MovieClip with frames for state (normal, hover, wrong)
+ * 
+ * 		options array element
+ * 		---------------------
+ * 		{ text:"" }
+ * 
+ * 		param name		type		default
+ * 		----------		----		-------
+ * 		slotName		(String)	"slot"
+ * 		slotTFName		(String)	"tf"
+ * 		slotBGName		(String)	"bg"
+ * 		optionName		(String)	"option"
+ * 		optionTFName	(String)	"tf"
+ * 		optionBGName	(String)	"bg"
+ * 		rightCallback	(Function)	null
+ * 		wrongCallback	(Function)	null
+ * 		changeCallback	(Function)	null
+ * 		
+ * 		labelHover		(String)	"hover"
+ * 		labelNormal		(String)	"normal"
+ * 		labelRight		(String)	"right"
+ * 		labelWrong		(String)	"wrong"
+ * 
+ * 		optionsExist	(Boolean)	false
+ * 		noSlot			(Boolean)	false
  */
 
 package toolbox {
 	
 	import flash.display.MovieClip;
 	import flash.events.MouseEvent;
+	import flash.utils.getDefinitionByName;
+	import flash.utils.getQualifiedClassName;
 	
-	public class DropDownCreator extends MovieClip {
+	public class DropDownCreator {
 		
-		public function DropDownCreator( options:Array ) {
-			__options = options;
-			__background = new MovieClip();
-			__listBackground = new MovieClip();
-			build();
+		//public function DropDownCreator() {}
+		
+		public static function CreateFromMovieClip( mc:MovieClip, options:Array, params:Object = null ):void {
+			var optionClass:Class;
+			var dropdown:Object = { };
+			var diffY:int;
+			var i:uint;
+			
+			if( params == null ) { params = { }; }
+			
+			dropdown[ "slotName" ] 			= params[ "slotName" ] || "slot";
+			dropdown[ "slotTFName" ] 		= params[ "slotTFName" ] || "tf";
+			dropdown[ "slotBGName" ] 		= params[ "slotBGName" ] || "bg";
+			dropdown[ "optionName" ] 		= params[ "optionName" ] || "option";
+			dropdown[ "optionTFName" ] 		= params[ "optionTFName" ] || "tf";
+			dropdown[ "optionBGName" ] 		= params[ "optionBGName" ] || "bg";
+			dropdown[ "rightCallback" ]		= params[ "rightCallback" ] as Function;
+			dropdown[ "changeCallback" ]	= params[ "changeCallback" ] as Function;
+			
+			dropdown[ "labelHover" ]		= params[ "labelHover" ] || "hover";
+			dropdown[ "labelNormal" ] 		= params[ "labelNormal" ] || "normal";
+			dropdown[ "labelRight" ]		= params[ "labelRight" ] || "right";
+			dropdown[ "labelWrong" ]		= params[ "labelWrong" ] || "wrong";
+			
+			dropdown[ "optionsExist" ]		= params[ "optionsExist" ] as Boolean;
+			dropdown[ "noSlot" ]			= params[ "noSlot" ] as Boolean;
+			
+			dropdown[ "mc" ] 				= mc;
+			
+			if( !(dropdown.optionsExist || dropdown.noSlot) ) {
+				diffY = mc[ dropdown.optionName ].y - mc[ dropdown.slotName ].y;
+			}
+			
+			// setup options
+			for( i = 1 ; i <= options.length ; i++ ) {
+				// only set text if the options already exist
+				if( dropdown.optionsExist ) {
+					mc[ dropdown.optionName + i ].tf.text = options[ (i-1) ].text;
+				}
+				// otherwise, create options and set text
+				else {
+					optionClass = getDefinitionByName( getQualifiedClassName( mc[ dropdown.optionName ] ) ) as Class;
+					mc[ dropdown.optionName + i ] = new optionClass();
+					mc[ dropdown.optionName + i ].y = mc[ dropdown.optionName ].y + ((i - 1) * diffY);
+					mc[ dropdown.optionName + i ].tf.text = options[ (i - 1) ].text;
+					mc.addChild( mc[ dropdown.optionName + i ] );
+					mc[ dropdown.optionName ].visible = false;
+				}
+			}
+			
+			if( !dropdown.noSlot ) {
+				mc[ dropdown.slotName ].addEventListener( MouseEvent.CLICK, mouseEvents );
+				hideOptions( dropdown );
+			}
+			
+			__registeredDropdowns.push( dropdown );
 		}
 		
-		private var __options:Array;
-		private var __elements:Array = [];
-		private var __background:MovieClip;
-		private var __listBackground:MovieClip;
+		public static function RemoveRegisteredMovieClip( mc:MovieClip ):void {
+			var dropdown:Object = findDropdown( mc, true );
+			
+			if( !dropdown.noSlot ) {
+				dropdown.mc[ dropdown.slotName ].removeEventListener( MouseEvent.CLICK, mouseEvents );
+			}
+		}
 		
-		private function build():void {
-			__background.graphics.clear();
-			__listBackground.graphics.clear();
-			var i:uint = 0;
-			var maxWidth:Number = 0;
-			var totalHeight:Number = 0;
-			for( i = 0 ; i < __options.length ; i++ ) {
-				__elements.push( TextHelper.displayText( __options[ i ], "option" + i, 14, 0, 0, 150 ) );
-			}
-			for( i = 0 ; i < __elements.length ; i++ ) {
-				if( __elements[ i ].width > maxWidth ) {
-					maxWidth = __elements[ i ].width;
+		public static function RemoveAllDropDowns():void {
+			
+		}
+		
+		private static var __registeredDropdowns:Array = [];
+		
+		private static function mouseEvents( e:MouseEvent ):void {
+			
+		}
+		
+		private static function showOptions( dropdown:Object ):void {
+			trace( "showOptions!" );
+		}
+		
+		private static function hideOptions( dropdown:Object ):void {
+			
+		}
+		
+		private static function selectOption( dropdown:Object, optionNum:int ):void {
+			
+		}
+		
+		private static function findDropdown( mc:MovieClip, forceRemove:Boolean ):Object {
+			var i:uint;
+			var dropdown:Object;
+			var numDropdowns:uint = __registeredDropdowns.length;
+			
+			for( i = 0 ; i < numDropdowns ; i++ ) {
+				if( __registeredDropdowns[ i ].mc == mc ) {
+					dropdown = __registeredDropdowns[ i ];
+					if( forceRemove ) {
+						__registeredDropdowns.splice( i, 1 );
+					}
+					return dropdown;
 				}
-				totalHeight += __elements[ i ].height;
 			}
 			
-			__listBackground.graphics.beginFill( 0xA5A5A5 );
-			__listBackground.graphics.drawRect( 0, 0, maxWidth + 10, totalHeight + 10 );
-			__listBackground.graphics.endFill();
-			
-			__background.graphics.beginFill( 0xA5A5A5, 0 );
-			__background.graphics.drawRect( 0, 0, maxWidth + 10, __elements[ 0 ].height );
-			
-			var curHeight:Number = 5;
-			for( i = 0 ; i < __elements.length ; i++ ) {
-				curHeight += __elements[ i ].height;
-				__elements[ i ].y += curHeight;
-				__elements[ i ].x = 5;
-				__listBackground.addChild( __elements[ i ] );
-			}
-			
-			this.addChild( __listBackground );
+			return null;
 		}
 	}
 }
-
+/*
 
 
 		private var __currentDD:MovieClip;
@@ -245,3 +339,4 @@ package toolbox {
 				}
 			}
 		}
+*/
