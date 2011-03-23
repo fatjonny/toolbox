@@ -36,6 +36,7 @@
  * 		noSlot			(Boolean)	false
  * 		showCorrect		(Boolean)	true
  * 		immediateAnswer	(Boolean)	false
+ * 		closeOthers		(Boolean)	true
  */
 
 package toolbox {
@@ -53,7 +54,7 @@ package toolbox {
 			var optionSelect:Function;
 			var slotSelect:Function;
 			var optionClass:Class;
-			var dropdown:Object = { };
+			var dropdown:Object = { open:false };
 			var diffY:int;
 			var i:uint;
 			
@@ -84,6 +85,8 @@ package toolbox {
 			else {										dropdown[ "showCorrect" ]		= true;	}
 			if( params[ "immediateAnswer" ] != null ) {	dropdown[ "immediateAnswer" ]	= params[ "immediateAnswer" ] as Boolean; }
 			else {										dropdown[ "immediateAnswer" ]	= false; }
+			if( params[ "closeOthers" ] != null ) { 	dropdown[ "closeOthers" ]		= params[ "closeOthers" ] as Boolean; }
+			else {										dropdown[ "closeOthers" ]		= true; }
 			
 			dropdown[ "mc" ] 				= mc;
 			
@@ -110,7 +113,7 @@ package toolbox {
 				}
 				
 				mc[ dropdown.optionName + i ].tf.text = options[ (i - 1) ].text;
-				ButtonCreator.CreateFromMovieClip( mc[ dropdown.optionName + i ], optionSelect(dropdown, i), { normal:dropdown.labelNormal, hover:dropdown.labelHover } );
+				ButtonCreator.CreateFromMovieClip( mc[ dropdown.optionName + i ], optionSelect(dropdown, i), { normal:dropdown.labelNormal, hover:dropdown.labelHover, persist:true } );
 			}
 			
 			if( !dropdown.noSlot ) {
@@ -123,9 +126,14 @@ package toolbox {
 		
 		public static function RemoveRegisteredMovieClip( mc:MovieClip ):void {
 			var dropdown:Object = findDropdown( mc, true );
+			var i:uint;
 			
 			if( !dropdown.noSlot ) {
 				ButtonCreator.RemoveRegisteredMovieClip( dropdown.mc[ dropdown.slotName ] );
+			}
+			
+			for( i = 1 ; i <= dropdown.options.length ; i++ ) {
+				ButtonCreator.RemoveRegisteredMovieClip( dropdown.mc[ dropdown.optionName + i ] );
 			}
 		}
 		
@@ -133,6 +141,7 @@ package toolbox {
 			var dropdown:Object = findDropdown( mc, false );
 			
 			if( dropdown.showCorrect ) {
+				ButtonCreator.RemoveRegisteredMovieClip( dropdown.mc[ dropdown.currentOption ] );
 				if( dropdown.status == "right" ) {
 					dropdown.mc[ dropdown.currentOption ][ dropdown.optionBGName ].gotoAndStop( dropdown.labelRight );
 					dropdown.mc[ dropdown.slotName ][ dropdown.slotBGName ].gotoAndStop( dropdown.labelRight );
@@ -140,10 +149,15 @@ package toolbox {
 				else {
 					dropdown.mc[ dropdown.currentOption ][ dropdown.optionBGName ].gotoAndStop( dropdown.labelWrong );
 					dropdown.mc[ dropdown.slotName ][ dropdown.slotBGName ].gotoAndStop( dropdown.labelWrong );
+					ButtonCreator.RemoveRegisteredMovieClip( dropdown.mc[ dropdown.slotName ] );
+					ButtonCreator.CreateFromMovieClip( dropdown.mc[ dropdown.slotName ], function():void { showOptions( dropdown ); }, { normal:dropdown.labelWrong, hover:dropdown.labelWrong } );
 				}
 			}
 			
-			if( dropdown.status != "right" ) {
+			if( dropdown.status == "right" ) {
+				ButtonCreator.RemoveRegisteredMovieClip( dropdown.mc[ dropdown.slotName ] );
+			}
+			else {
 				dropdown.mc[ dropdown.slotName ][ dropdown.slotTFName ].text = "";
 				dropdown.currentOption = null;
 			}
@@ -164,6 +178,15 @@ package toolbox {
 			for( i = 1 ; i <= dropdown.options.length ; i++ ) {
 				dropdown.mc[ dropdown.optionName + i ].visible = true;
 			}
+			
+			if( !dropdown.noSlot ) {
+				for( i = 0 ; i < __registeredDropdowns.length ; i++ ) {
+					if( __registeredDropdowns[ i ].open ) {
+						hideOptions( __registeredDropdowns[ i ] );
+					}
+				}
+				dropdown.open = true;
+			}
 		}
 		
 		private static function hideOptions( dropdown:Object ):void {
@@ -173,22 +196,21 @@ package toolbox {
 				dropdown.mc[ dropdown.optionName + i ].visible = false;
 			}
 			
-//			if( dropdown.status != "right" && dropdown.status != "disabled" ) {
-//				ButtonCreator.CreateFromMovieClip( dropdown.mc[ dropdown.slotName ], clickFunc
+			dropdown.open = false;
+			ButtonCreator.CreateFromMovieClip( dropdown.mc[ dropdown.slotName ], function():void { showOptions( dropdown ); }, { normal:dropdown.labelNormal, hover:dropdown.labelHover } );
 		}
 		
 		private static function selectOption( dropdown:Object, optionNum:int ):void {
-			if( !dropdown.noSlot ) {
-				hideOptions( dropdown );
-				dropdown.mc[ dropdown.slotName ][ dropdown.slotTFName ].text = dropdown.mc[ dropdown.optionName + optionNum ][ dropdown.optionTFName ].text;
-			}
-			else {
-			}
 			
 			dropdown.currentOption = optionNum;
 			dropdown.status = "wrong";
 			if( dropdown.options[ optionNum - 1 ].correct ) {
 				dropdown.status = "right";
+			}
+			
+			if( !dropdown.noSlot ) {
+				hideOptions( dropdown );
+				dropdown.mc[ dropdown.slotName ][ dropdown.slotTFName ].text = dropdown.mc[ dropdown.optionName + optionNum ][ dropdown.optionTFName ].text;
 			}
 			
 			if( dropdown.immediateAnswer ) {
