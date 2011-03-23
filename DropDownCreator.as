@@ -75,14 +75,12 @@ package toolbox {
 			dropdown[ "labelRight" ]		= params[ "labelRight" ] || "right";
 			dropdown[ "labelWrong" ]		= params[ "labelWrong" ] || "wrong";
 			
-			dropdown[ "optionsExist" ]		= params[ "optionsExist" ] as Boolean;
-			dropdown[ "noSlot" ]			= params[ "noSlot" ] as Boolean;
-			if( params[ "showCorrect" ] != null ) {
-				dropdown[ "showCorrect" ]		= params[ "showCorrect" ] as Boolean;
-			}
-			else {
-				dropdown[ "showCorrect" ]		= true;
-			}
+			if( params[ "optionsExist" ] != null ) {	dropdown[ "optionsExist" ]		= params[ "optionsExist" ] as Boolean; }
+			else {										dropdown[ "optionsExist" ]		= false; }
+			if( params[ "noSlot" ] != null ) {			dropdown[ "noSlot" ]			= params[ "noSlot" ] as Boolean; }
+			else { 										dropdown[ "noSlot" ]			= false; }
+			if( params[ "showCorrect" ] != null ) {		dropdown[ "showCorrect" ]		= params[ "showCorrect" ] as Boolean; }
+			else {										dropdown[ "showCorrect" ]		= true;	}
 			
 			dropdown[ "mc" ] 				= mc;
 			
@@ -163,9 +161,9 @@ package toolbox {
 		private static function selectOption( dropdown:Object, optionNum:int ):void {
 			if( !dropdown.noSlot ) {
 				hideOptions( dropdown );
+				dropdown.mc[ dropdown.slotName ][ dropdown.slotTFName ].text = dropdown.mc[ dropdown.optionName + optionNum ][ dropdown.optionTFName ].text;
 			}
 			else {
-				dropdown.mc[ dropdown.slotName ][ dropdown.slotTFName ].text = dropdown[ dropdown.optionName + optionNum ][ dropdown.optionTFName ].text;
 			}
 			if( dropdown.changeCallback ) { dropdown.changeCallback( dropdown.mc ); }
 			
