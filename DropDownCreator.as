@@ -35,6 +35,7 @@
  * 		optionsExist	(Boolean)	false
  * 		noSlot			(Boolean)	false
  * 		showCorrect		(Boolean)	true
+ * 		immediateAnswer	(Boolean)	false
  */
 
 package toolbox {
@@ -81,6 +82,8 @@ package toolbox {
 			else { 										dropdown[ "noSlot" ]			= false; }
 			if( params[ "showCorrect" ] != null ) {		dropdown[ "showCorrect" ]		= params[ "showCorrect" ] as Boolean; }
 			else {										dropdown[ "showCorrect" ]		= true;	}
+			if( params[ "immediateAnswer" ] != null ) {	dropdown[ "immediateAnswer" ]	= params[ "immediateAnswer" ] as Boolean; }
+			else {										dropdown[ "immediateAnswer" ]	= false; }
 			
 			dropdown[ "mc" ] 				= mc;
 			
@@ -126,12 +129,28 @@ package toolbox {
 			}
 		}
 		
-		public static function GetDropdownStatus( dropdown:MovieClip ):Object {
-			return null;
+		public static function Validate( mc:MovieClip ):void {
+			var dropdown:Object = findDropdown( mc, false );
+			
+			if( dropdown.showCorrect ) {
+				if( dropdown.status == "right" ) {
+					dropdown.mc[ dropdown.currentOption ][ dropdown.optionBGName ].gotoAndStop( dropdown.labelRight );
+					dropdown.mc[ dropdown.slotName ][ dropdown.slotBGName ].gotoAndStop( dropdown.labelRight );
+				}
+				else {
+					dropdown.mc[ dropdown.currentOption ][ dropdown.optionBGName ].gotoAndStop( dropdown.labelWrong );
+					dropdown.mc[ dropdown.slotName ][ dropdown.slotBGName ].gotoAndStop( dropdown.labelWrong );
+				}
+			}
+			
+			if( dropdown.status != "right" ) {
+				dropdown.mc[ dropdown.slotName ][ dropdown.slotTFName ].text = "";
+				dropdown.currentOption = null;
+			}
 		}
 		
-		public static function SetDropdownStatus( dropdown:MovieClip ):void {
-			
+		public static function GetDropdownStatus( dropdown:MovieClip ):Object {
+			return dropdown.status;
 		}
 		
 		public static function RemoveAllDropDowns():void {
@@ -165,6 +184,17 @@ package toolbox {
 			}
 			else {
 			}
+			
+			dropdown.currentOption = optionNum;
+			dropdown.status = "wrong";
+			if( dropdown.options[ optionNum - 1 ].correct ) {
+				dropdown.status = "right";
+			}
+			
+			if( dropdown.immediateAnswer ) {
+				Validate( dropdown.mc );
+			}
+			
 			if( dropdown.changeCallback ) { dropdown.changeCallback( dropdown.mc ); }
 			
 			if( dropdown.options[ optionNum - 1 ].correct ) {
