@@ -168,7 +168,9 @@ package toolbox {
 		}
 		
 		public static function RemoveAllDropDowns():void {
-			
+			while( __registeredDropdowns.length ) {
+				RemoveRegisteredMovieClip( __registeredDropdowns[ 0 ].mc );
+			}
 		}
 		
 		private static var __registeredDropdowns:Array = [];
