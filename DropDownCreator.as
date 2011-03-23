@@ -11,7 +11,7 @@
  * 
  * 		options array element
  * 		---------------------
- * 		{ text:"" }
+ * 		{ text:"", correct:false }
  * 
  * 		param name		type		default
  * 		----------		----		-------
@@ -21,9 +21,11 @@
  * 		optionName		(String)	"option"
  * 		optionTFName	(String)	"tf"
  * 		optionBGName	(String)	"bg"
+ * 
  * 		rightCallback	(Function)	null
  * 		wrongCallback	(Function)	null
  * 		changeCallback	(Function)	null
+ * 		openCallback	(Function)	null
  * 		
  * 		labelHover		(String)	"hover"
  * 		labelNormal		(String)	"normal"
@@ -32,6 +34,7 @@
  * 
  * 		optionsExist	(Boolean)	false
  * 		noSlot			(Boolean)	false
+ * 		showCorrect		(Boolean)	true
  */
 
 package toolbox {
@@ -46,6 +49,8 @@ package toolbox {
 		//public function DropDownCreator() {}
 		
 		public static function CreateFromMovieClip( mc:MovieClip, options:Array, params:Object = null ):void {
+			var optionSelect:Function;
+			var slotSelect:Function;
 			var optionClass:Class;
 			var dropdown:Object = { };
 			var diffY:int;
@@ -53,12 +58,15 @@ package toolbox {
 			
 			if( params == null ) { params = { }; }
 			
+			dropdown[ "options" ]			= options;
+			
 			dropdown[ "slotName" ] 			= params[ "slotName" ] || "slot";
 			dropdown[ "slotTFName" ] 		= params[ "slotTFName" ] || "tf";
 			dropdown[ "slotBGName" ] 		= params[ "slotBGName" ] || "bg";
 			dropdown[ "optionName" ] 		= params[ "optionName" ] || "option";
 			dropdown[ "optionTFName" ] 		= params[ "optionTFName" ] || "tf";
 			dropdown[ "optionBGName" ] 		= params[ "optionBGName" ] || "bg";
+			
 			dropdown[ "rightCallback" ]		= params[ "rightCallback" ] as Function;
 			dropdown[ "changeCallback" ]	= params[ "changeCallback" ] as Function;
 			
@@ -69,32 +77,43 @@ package toolbox {
 			
 			dropdown[ "optionsExist" ]		= params[ "optionsExist" ] as Boolean;
 			dropdown[ "noSlot" ]			= params[ "noSlot" ] as Boolean;
+			if( params[ "showCorrect" ] != null ) {
+				dropdown[ "showCorrect" ]		= params[ "showCorrect" ] as Boolean;
+			}
+			else {
+				dropdown[ "showCorrect" ]		= true;
+			}
 			
 			dropdown[ "mc" ] 				= mc;
 			
 			if( !(dropdown.optionsExist || dropdown.noSlot) ) {
 				diffY = mc[ dropdown.optionName ].y - mc[ dropdown.slotName ].y;
+				mc[ dropdown.optionName ].visible = false;
 			}
 			
 			// setup options
+			optionSelect = function( dropdown:Object, i:uint ):Function {
+				return function():void { selectOption( dropdown, i ); };
+			}
+			slotSelect = function( dropdown:Object ):Function {
+				return function():void { showOptions( dropdown ); };
+			}
+			
 			for( i = 1 ; i <= options.length ; i++ ) {
-				// only set text if the options already exist
-				if( dropdown.optionsExist ) {
-					mc[ dropdown.optionName + i ].tf.text = options[ (i-1) ].text;
-				}
-				// otherwise, create options and set text
-				else {
+				
+				if( !dropdown.optionsExist ) {
 					optionClass = getDefinitionByName( getQualifiedClassName( mc[ dropdown.optionName ] ) ) as Class;
 					mc[ dropdown.optionName + i ] = new optionClass();
 					mc[ dropdown.optionName + i ].y = mc[ dropdown.optionName ].y + ((i - 1) * diffY);
-					mc[ dropdown.optionName + i ].tf.text = options[ (i - 1) ].text;
 					mc.addChild( mc[ dropdown.optionName + i ] );
-					mc[ dropdown.optionName ].visible = false;
 				}
+				
+				mc[ dropdown.optionName + i ].tf.text = options[ (i - 1) ].text;
+				ButtonCreator.CreateFromMovieClip( mc[ dropdown.optionName + i ], optionSelect(dropdown, i), { normal:dropdown.labelNormal, hover:dropdown.labelHover } );
 			}
 			
 			if( !dropdown.noSlot ) {
-				mc[ dropdown.slotName ].addEventListener( MouseEvent.CLICK, mouseEvents );
+				ButtonCreator.CreateFromMovieClip( mc[ dropdown.slotName ], slotSelect(dropdown), { normal:dropdown.labelNormal, hover:dropdown.labelHover } );
 				hideOptions( dropdown );
 			}
 			
@@ -105,8 +124,16 @@ package toolbox {
 			var dropdown:Object = findDropdown( mc, true );
 			
 			if( !dropdown.noSlot ) {
-				dropdown.mc[ dropdown.slotName ].removeEventListener( MouseEvent.CLICK, mouseEvents );
+				ButtonCreator.RemoveRegisteredMovieClip( dropdown.mc[ dropdown.slotName ] );
 			}
+		}
+		
+		public static function GetDropdownStatus( dropdown:MovieClip ):Object {
+			return null;
+		}
+		
+		public static function SetDropdownStatus( dropdown:MovieClip ):void {
+			
 		}
 		
 		public static function RemoveAllDropDowns():void {
@@ -115,20 +142,39 @@ package toolbox {
 		
 		private static var __registeredDropdowns:Array = [];
 		
-		private static function mouseEvents( e:MouseEvent ):void {
-			
-		}
-		
 		private static function showOptions( dropdown:Object ):void {
-			trace( "showOptions!" );
+			var i:uint;
+			for( i = 1 ; i <= dropdown.options.length ; i++ ) {
+				dropdown.mc[ dropdown.optionName + i ].visible = true;
+			}
 		}
 		
 		private static function hideOptions( dropdown:Object ):void {
+			var i:uint;
+			var clickFunc:Function;
+			for( i = 1 ; i <= dropdown.options.length ; i++ ) {
+				dropdown.mc[ dropdown.optionName + i ].visible = false;
+			}
 			
+//			if( dropdown.status != "right" && dropdown.status != "disabled" ) {
+//				ButtonCreator.CreateFromMovieClip( dropdown.mc[ dropdown.slotName ], clickFunc
 		}
 		
 		private static function selectOption( dropdown:Object, optionNum:int ):void {
+			if( !dropdown.noSlot ) {
+				hideOptions( dropdown );
+			}
+			else {
+				dropdown.mc[ dropdown.slotName ][ dropdown.slotTFName ].text = dropdown[ dropdown.optionName + optionNum ][ dropdown.optionTFName ].text;
+			}
+			if( dropdown.changeCallback ) { dropdown.changeCallback( dropdown.mc ); }
 			
+			if( dropdown.options[ optionNum - 1 ].correct ) {
+				if( dropdown.rightCallback ) { dropdown.rightCallback( dropdown.mc ); }
+			}
+			else {
+				if( dropdown.wrongCallback ) { dropdown.wrongCallback( dropdown.mc ); }
+			}
 		}
 		
 		private static function findDropdown( mc:MovieClip, forceRemove:Boolean ):Object {
