@@ -149,23 +149,29 @@ package toolbox {
 			if( dropdown.showCorrect ) {
 				ButtonCreator.RemoveRegisteredMovieClip( dropdown.mc[ dropdown.currentOption ] );
 				if( dropdown.status == "right" ) {
-					dropdown.mc[ dropdown.currentOption ][ dropdown.optionBGName ].gotoAndStop( dropdown.labelRight );
-					dropdown.mc[ dropdown.slotName ][ dropdown.slotBGName ].gotoAndStop( dropdown.labelRight );
+					dropdown.mc[ dropdown.optionName + dropdown.currentOption ][ dropdown.optionBGName ].gotoAndStop( dropdown.labelRight );
+					if( !dropdown.noSlot ) {
+						dropdown.mc[ dropdown.slotName ][ dropdown.slotBGName ].gotoAndStop( dropdown.labelRight );
+					}
 				}
 				else {
-					dropdown.mc[ dropdown.currentOption ][ dropdown.optionBGName ].gotoAndStop( dropdown.labelWrong );
-					dropdown.mc[ dropdown.slotName ][ dropdown.slotBGName ].gotoAndStop( dropdown.labelWrong );
-					ButtonCreator.RemoveRegisteredMovieClip( dropdown.mc[ dropdown.slotName ] );
-					ButtonCreator.CreateFromMovieClip( dropdown.mc[ dropdown.slotName ], function():void { showOptions( dropdown ); }, { normal:dropdown.labelWrong, hover:dropdown.labelWrong } );
+					dropdown.mc[ dropdown.optionName + dropdown.currentOption ][ dropdown.optionBGName ].gotoAndStop( dropdown.labelWrong );
+					if( !dropdown.noSlot ) {
+						dropdown.mc[ dropdown.slotName ][ dropdown.slotBGName ].gotoAndStop( dropdown.labelWrong );
+						ButtonCreator.RemoveRegisteredMovieClip( dropdown.mc[ dropdown.slotName ] );
+						ButtonCreator.CreateFromMovieClip( dropdown.mc[ dropdown.slotName ], function():void { showOptions( dropdown ); }, { normal:dropdown.labelWrong, hover:dropdown.labelWrong } );
+					}
 				}
 			}
 			
-			if( dropdown.status == "right" ) {
-				ButtonCreator.RemoveRegisteredMovieClip( dropdown.mc[ dropdown.slotName ] );
-			}
-			else {
-				dropdown.mc[ dropdown.slotName ][ dropdown.slotTFName ].text = "";
-				dropdown.currentOption = null;
+			if( !dropdown.noSlot ) {
+				if( dropdown.status == "right" ) {
+					ButtonCreator.RemoveRegisteredMovieClip( dropdown.mc[ dropdown.slotName ] );
+				}
+				else {
+					dropdown.mc[ dropdown.slotName ][ dropdown.slotTFName ].text = "";
+					dropdown.currentOption = null;
+				}
 			}
 		}
 		
