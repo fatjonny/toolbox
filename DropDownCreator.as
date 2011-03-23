@@ -116,11 +116,11 @@ package toolbox {
 				}
 				
 				mc[ dropdown.optionName + i ].tf.text = options[ (i - 1) ].text;
-				ButtonCreator.CreateFromMovieClip( mc[ dropdown.optionName + i ], optionSelect(dropdown, i), { normal:dropdown.labelNormal, hover:dropdown.labelHover, persist:true } );
+				ButtonCreator.CreateFromMovieClip( dropdown.mc[ dropdown.optionName + i ], optionSelect(dropdown, i), { normalFunc:buttonFunc( mc[ dropdown.optionName + i ], dropdown.optionBGName, dropdown.labelNormal ), hoverFunc:buttonFunc( dropdown.mc[ dropdown.optionName + i ], dropdown.optionBGName, dropdown.labelHover ), persist:true } );
 			}
 			
 			if( !dropdown.noSlot ) {
-				ButtonCreator.CreateFromMovieClip( mc[ dropdown.slotName ], slotSelect(dropdown), { normal:dropdown.labelNormal, hover:dropdown.labelHover } );
+				ButtonCreator.CreateFromMovieClip( mc[ dropdown.slotName ], slotSelect(dropdown), { normalFunc:buttonFunc( dropdown.mc[ dropdown.slotName ], dropdown.slotBGName, dropdown.labelNormal ), hoverFunc:buttonFunc( dropdown.mc[ dropdown.slotName ], dropdown.slotBGName, dropdown.labelHover ) } );
 				hideOptions( dropdown );
 				if( dropdown.clearSlot ) {
 					mc[ dropdown.slotName ][ dropdown.slotTFName ].text = "";
@@ -147,7 +147,7 @@ package toolbox {
 			var dropdown:Object = findDropdown( mc, false );
 			
 			if( dropdown.showCorrect ) {
-				ButtonCreator.RemoveRegisteredMovieClip( dropdown.mc[ dropdown.currentOption ] );
+				ButtonCreator.RemoveRegisteredMovieClip( dropdown.mc[ dropdown.optionName + dropdown.currentOption ] );
 				if( dropdown.status == "right" ) {
 					dropdown.mc[ dropdown.optionName + dropdown.currentOption ][ dropdown.optionBGName ].gotoAndStop( dropdown.labelRight );
 					if( !dropdown.noSlot ) {
@@ -159,7 +159,7 @@ package toolbox {
 					if( !dropdown.noSlot ) {
 						dropdown.mc[ dropdown.slotName ][ dropdown.slotBGName ].gotoAndStop( dropdown.labelWrong );
 						ButtonCreator.RemoveRegisteredMovieClip( dropdown.mc[ dropdown.slotName ] );
-						ButtonCreator.CreateFromMovieClip( dropdown.mc[ dropdown.slotName ], function():void { showOptions( dropdown ); }, { normal:dropdown.labelWrong, hover:dropdown.labelWrong } );
+						ButtonCreator.CreateFromMovieClip( dropdown.mc[ dropdown.slotName ], function():void { showOptions( dropdown ); }, { normalFunc:buttonFunc( dropdown.mc[ dropdown.slotName ], dropdown.slotBGName, dropdown.labelWrong ), hoverFunc:buttonFunc( dropdown.mc[ dropdown.slotName ], dropdown.slotBGName, dropdown.labelHover ) } );
 					}
 				}
 			}
@@ -211,7 +211,7 @@ package toolbox {
 			}
 			
 			dropdown.open = false;
-			ButtonCreator.CreateFromMovieClip( dropdown.mc[ dropdown.slotName ], function():void { showOptions( dropdown ); }, { normal:dropdown.labelNormal, hover:dropdown.labelHover } );
+			ButtonCreator.CreateFromMovieClip( dropdown.mc[ dropdown.slotName ], function():void { showOptions( dropdown ); }, { normalFunc:buttonFunc( dropdown.mc[ dropdown.slotName ], dropdown.slotBGName, dropdown.labelNormal ), hoverFunc:buttonFunc( dropdown.mc[ dropdown.slotName ], dropdown.slotBGName, dropdown.labelHover ) } );
 		}
 		
 		private static function selectOption( dropdown:Object, optionNum:int ):void {
@@ -239,6 +239,10 @@ package toolbox {
 			else {
 				if( dropdown.wrongCallback ) { dropdown.wrongCallback( dropdown.mc ); }
 			}
+		}
+		
+		private static function buttonFunc( mc:MovieClip, bgName:String, label:String ):Function {
+			return function():void { mc[ bgName ].gotoAndStop( label ); };
 		}
 		
 		private static function findDropdown( mc:MovieClip, forceRemove:Boolean ):Object {
