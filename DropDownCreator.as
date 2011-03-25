@@ -175,7 +175,8 @@ package toolbox {
 			}
 		}
 		
-		public static function GetDropdownStatus( dropdown:MovieClip ):Object {
+		public static function GetDropdownStatus( mc:MovieClip ):Object {
+			var dropdown:Object = findDropdown( mc, false );
 			return dropdown.status;
 		}
 		
@@ -231,13 +232,13 @@ package toolbox {
 				Validate( dropdown.mc );
 			}
 			
-			if( dropdown.changeCallback ) { dropdown.changeCallback( dropdown.mc ); }
+			if( dropdown.changeCallback ) { dropdown.changeCallback( dropdown.mc, dropdown.currentOption ); }
 			
-			if( dropdown.options[ optionNum - 1 ].correct ) {
-				if( dropdown.rightCallback ) { dropdown.rightCallback( dropdown.mc ); }
+			if( dropdown.status == "right" ) {
+				if( dropdown.rightCallback ) { dropdown.rightCallback( dropdown.mc, dropdown.currentOption ); }
 			}
 			else {
-				if( dropdown.wrongCallback ) { dropdown.wrongCallback( dropdown.mc ); }
+				if( dropdown.wrongCallback ) { dropdown.wrongCallback( dropdown.mc, dropdown.currentOption ); }
 			}
 		}
 		
