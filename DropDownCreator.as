@@ -13,9 +13,9 @@
  * 		---------------------
  * 		{ text:"", correct:false }
  * 
- * 		param name		type		default
- * 		----------		----		-------
- * 		slotName		(String)	"slot"
+ * 		param name		type		default		effect
+ * 		----------		----		-------		------
+ * 		slotName		(String)	"slot"			
  * 		slotTFName		(String)	"tf"
  * 		slotBGName		(String)	"bg"
  * 		optionName		(String)	"option"
@@ -24,20 +24,20 @@
  * 
  * 		rightCallback	(Function)	null
  * 		wrongCallback	(Function)	null
- * 		changeCallback	(Function)	null
- * 		openCallback	(Function)	null
+ * 		changeCallback	(Function)	null		thing to do when it is changed
+ * 		openCallback	(Function)	null		thing to do when it is opened
  * 		
- * 		labelHover		(String)	"hover"
+ * 		labelHover		(String)	"hover"	
  * 		labelNormal		(String)	"normal"
  * 		labelRight		(String)	"right"
  * 		labelWrong		(String)	"wrong"
  * 
- * 		optionsExist	(Boolean)	false
- * 		noSlot			(Boolean)	false
- * 		showCorrect		(Boolean)	true
- * 		immediateAnswer	(Boolean)	false
- * 		closeOthers		(Boolean)	true
- * 		clearSlot		(Boolean)	true
+ * 		optionsExist	(Boolean)	false		option mcs already exist in the flash - incompatible with noSlot?
+ * 		noSlot			(Boolean)	false		makes it actually multiple choice, all options show up
+ * 		showCorrect		(Boolean)	true		if there is a correct answer, show it when you validate
+ * 		immediateAnswer	(Boolean)	false		calls validate immediately/automatically
+ * 		closeOthers		(Boolean)	true		not used -- makes only one dropdown visible at one time.
+ * 		clearSlot		(Boolean)	true		on init, if it should clear the text field slot
  */
 
 package toolbox {
