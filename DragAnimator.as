@@ -30,6 +30,7 @@ package toolbox {
 			__endFunc = endFunc;
 			if (distToDrag > 0) {
 				__dragRatio = distToDrag / __mci.numFramesInLabel(__frameLabel);
+				trace(__dragRatio, distToDrag);
 			}
 		}
 		
@@ -63,7 +64,7 @@ package toolbox {
 			__mouseDiff = __mouseStartX - e.stageX;
 			var frameNum:int = Math.floor(__mci.startFrameForLabel(__frameLabel) + __mouseDiff / __dragRatio)
 			var totalFrames:int = __mci.startFrameForLabel(__frameLabel) + __mci.numFramesInLabel(__frameLabel) -1 ; 
-			//trace(frameNum, totalFrames);
+			trace(frameNum, totalFrames);
 			if (frameNum > totalFrames) {
 				frameNum = totalFrames; 
 				finish();
