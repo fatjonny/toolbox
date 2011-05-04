@@ -115,6 +115,10 @@ package toolbox {
 			}
 		}
 		
+		public static function setApplicationDomain( appDomain:ApplicationDomain ):void {
+			__domain = appDomain;
+		}
+		
 		private static var __channel:Object = {};
 		private static var __mute:Boolean = false;
 		private static var __sound:Object = {};
