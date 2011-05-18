@@ -13,6 +13,7 @@
  *		hoverSound	(String)	""
  * 		hoverFunc	(Function)	null
  * 		disabled	(String)	""
+ * 		group		(String)	""
  */
 
 package toolbox {
@@ -65,6 +66,32 @@ package toolbox {
 			if( params.normalFunc ) {
 				params.normalFunc( mc );
 			}
+		}
+		
+		public static function RemoveAllGroupRegisteredMovieClips( group:String ):void {
+			var params:Object;
+			var i:uint = 0;
+			var count:uint = 0;
+			trace( "+- RemoveAllGroupRegisteredMovieClips -+" );
+			while( i < __registeredButtons.length ) {
+				params = __registeredButtons[ i ];
+				if( params.group == group ) {
+					RemoveRegisteredMovieClip( params.mc );
+					count++;
+				}
+				else {
+					i++;
+				}
+			}
+			trace( "+--------------------------------------+", count );
+		}
+		
+		public static function RemoveAllRegisteredMovieClips():void {
+			trace( "+- RemoveAllRegisteredMovieClips -+", __registeredButtons.length );
+			while( __registeredButtons.length ) {
+				RemoveRegisteredMovieClip( __registeredButtons[ 0 ].mc );
+			}
+			trace( "+---------------------------------+" );
 		}
 		
 		private static var __registeredButtons:Array = [];
