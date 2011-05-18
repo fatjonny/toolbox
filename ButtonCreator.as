@@ -14,6 +14,7 @@
  * 		hoverFunc	(Function)	null
  * 		disabled	(String)	""
  * 		group		(String)	""
+ * 		removeGroup	(Boolean)	false
  */
 
 package toolbox {
@@ -107,6 +108,10 @@ package toolbox {
 			if( e.type == MouseEvent.CLICK ) {
 				if( !params.persist ) {
 					RemoveRegisteredMovieClip( mc );
+				}
+				
+				if( params.removeGroup ) {
+					RemoveAllGroupRegisteredMovieClips( params.group );
 				}
 				
 				// will get overridden by any sounds in params.func
