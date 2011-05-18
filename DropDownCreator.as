@@ -72,6 +72,7 @@ package toolbox {
 			
 			dropdown[ "rightCallback" ]		= params[ "rightCallback" ] as Function;
 			dropdown[ "changeCallback" ]	= params[ "changeCallback" ] as Function;
+			dropdown[ "wrongCallback" ] 	= params[ "wrongCallback" ] as Function;
 			
 			dropdown[ "labelHover" ]		= params[ "labelHover" ] || "hover";
 			dropdown[ "labelNormal" ] 		= params[ "labelNormal" ] || "normal";
