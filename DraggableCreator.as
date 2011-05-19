@@ -1,4 +1,17 @@
 /*
+ * Callbacks:
+ * 
+ * down( mc:MovieClip )
+ * up( obj:Object, bestFit:MovieClip )
+ * 
+ * 		obj = { mc(MovieClip),
+ * 				hitAreas(Array),
+ * 				down(Function),
+ * 				up(Function),
+ * 				mostArea(Boolean),
+ * 				snapBack(Boolean),
+ * 				lockCenter(Boolean)
+ * 			  }
  * 
  */
 
