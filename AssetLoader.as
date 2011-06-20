@@ -69,6 +69,9 @@ package toolbox {
 			}
 		}
 		
+		//Megan added
+		public static function getProgress():int { return __progress; }
+		
 		//
 		// P R I V A T E
 		//
@@ -76,6 +79,7 @@ package toolbox {
 		private static var __loader:Loader;
 		private static var __urlLoader:URLLoader;
 		private static var __func:Function;
+		private static var __progress:int;
 		
 		private static function loaderComplete( e:Event ):void { trace( "loaderComplete", e ); var content:Object = e.target.loader.content; destroy(); __func( e, content ); }
 		
@@ -89,7 +93,10 @@ package toolbox {
 		
 		private static function loaderOpen( e:Event ):void { trace( "loaderOpen", e ); }
 		
-		private static function loaderProgress( e:ProgressEvent ):void { trace( "loaderProgress", e ); }
+		private static function loaderProgress( e:ProgressEvent ):void { 
+			__progress = Math.floor(e.bytesLoaded / e.bytesTotal * 100);
+			trace( "loaderProgress", e, __progress ); 
+		}
 		
 		private static function loaderUnload( e:Event ):void { trace( "loaderUnload", e ); }
 
