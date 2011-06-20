@@ -30,9 +30,11 @@ package toolbox {
 			params.func = func;
 			__registeredButtons.push( params );
 			__cursorMC = mc; 
+			
 			mc.stage.addEventListener(MouseEvent.MOUSE_MOVE, MovieClipEvents);
 			Mouse.hide(); 
 			mc.parent.addChild(mc);
+			
 			//click through
 			mc.mouseEnabled = false;
 			mc.mouseChildren = false;

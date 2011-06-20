@@ -5,6 +5,7 @@
  *  channel:String	("main")
  *  startAt:int		(0)
  *  onLoop:Function	()
+ *  fade:Number   (undefined)
  */
 
 package toolbox {
@@ -13,6 +14,8 @@ package toolbox {
 	import flash.events.Event;
 	import flash.system.ApplicationDomain;
 	import toolbox.EventHandler;
+	import flash.utils.Timer;
+	import flash.events.TimerEvent;
 	
 	public class SoundHelper {
 		
@@ -60,8 +63,18 @@ package toolbox {
 			if( params.onLoop ) {
 				__channel[ params.channel ].onLoop = params.onLoop;
 			}
-			
+						
 			__channel[ params.channel ].content = __sound[ __channel[ params.channel ].sound ].play( __channel[ params.channel ].startAt );
+			
+			if ( params.fade ) {
+				__channel[ params.channel ].fade = params.fade;
+				
+				__trans = new SoundTransform(0, 0);
+				__channel[params.channel].content.soundTransform = __trans;
+				__timer = new Timer(250);
+				__timer.addEventListener(TimerEvent.TIMER, fadeInFunc(params.channel));
+				__timer.start();		
+			}
 			
 			if( params.loop ) {
 				__channel[ params.channel ].loop = params.loop;
@@ -72,9 +85,22 @@ package toolbox {
 			}
 		}
 		
+		private static function fadeInFunc(name:String):Function {
+			return function (e:TimerEvent):void {
+				__trans.volume += __channel[name].fade;
+				if (__trans.volume >= .99) {
+					__trans.volume = 1;
+					__timer.stop();
+					__timer.removeEventListener(TimerEvent.TIMER, fadeInFunc(name));
+				}
+				__channel[ name ].content.soundTransform = __trans;
+				trace(name, "Volume", __trans.volume);
+			}
+		}
+		
 		public static function stopChannel( name:String ):void {
-			if( !__channel[ name ] ) { return; }
-			
+			if ( !__channel[ name ] ) { return; }
+						
 			if( __channel[ name ].loop == true ) {
 				__channel[ name ].loop = false;
 				if( __channel[ name ].content ) {
@@ -86,32 +112,92 @@ package toolbox {
 					__channel[ name ].content.removeEventListener( Event.SOUND_COMPLETE, clearChannel );
 				}
 			}
-			if( __channel[ name ].content ) {
-				__channel[ name ].content.stop();
-				__channel[ name ].content = null;
+						
+			if (__channel[name].fade) {		
+				//stop any fade in
+				__timer.stop();
+				__timer.removeEventListener(TimerEvent.TIMER, fadeInFunc(name));		
+				
+				__timer = new Timer(250);
+				__timer.addEventListener(TimerEvent.TIMER, fadeOutFunc(name, true));
+				__timer.start();
 			}
-			__channel[ name ].sound = null;
-			__channel[ name ].startAt = 0;
+			else {
+				if( __channel[ name ].content ) {
+					__channel[ name ].content.stop();
+					__channel[ name ].content = null;
+				}
+				__channel[ name ].sound = null;
+				__channel[ name ].startAt = 0;				
+			}
+			
+		}		
+		
+		private static function fadeOutFunc(name:String, stop:Boolean):Function {	
+			return function (e:TimerEvent):void {
+				__trans.volume -= __channel[name].fade;
+				if (__trans.volume <= .001) {
+					__trans.volume = 0;
+					__timer.stop();
+					__timer.removeEventListener(TimerEvent.TIMER, fadeOutFunc(name, stop));
+					
+					if(stop){
+						if( __channel[ name ].content ) {
+							__channel[ name ].content.stop();
+							__channel[ name ].content = null;
+						}
+						__channel[ name ].sound = null;
+						__channel[ name ].startAt = 0;	
+					}
+					else {						
+						__channel[ name ].content.soundTransform = __trans;	
+						__channel[ name ].content.stop();
+					}
+				}
+				else{
+					__channel[ name ].content.soundTransform = __trans;	
+					trace(name, "Volume", __trans.volume);	
+				}
+			}
 		}
 		
 		public static function pauseChannel( name:String ):void {
-			if( !__channel[ name ] ) { return; }
+			if ( !__channel[ name ] ) { return; }
 			
-			if( __channel[ name ] && __channel[ name ].content ) {
-				__channel[ name ].pausedAt = __channel[ name ].content.position;
-				__channel[ name ].content.stop();
+			if ( __channel[ name ] && __channel[ name ].content ) {
+				if (__channel[name].fade) {	
+					//stop any fade in
+					__timer.stop();
+					__timer.removeEventListener(TimerEvent.TIMER, fadeInFunc(name));		
+					
+					__timer = new Timer(250);
+					__timer.addEventListener(TimerEvent.TIMER, fadeOutFunc(name, false));
+					__timer.start();		
+				}
+				else {
+					__channel[ name ].content.stop();
+				}		
+				__channel[ name ].pausedAt = __channel[ name ].content.position;	
 			}
 		}
 		
 		public static function playChannel( name:String ):void {
-			if( !__channel[ name ] ) { return; }
-			
+			if ( !__channel[ name ] ) { return; }
+						
 			if( __channel[ name ].pausedAt ) {
 				__channel[ name ].content = __sound[ __channel[ name ].sound ].play( __channel[ name ].pausedAt );
 				__channel[ name ].pausedAt = null;
 			}
 			else if( __channel[ name ].sound ) {
 				__channel[ name ].content = __sound[ __channel[ name ].sound ].play( __channel[ name ].startAt );
+			}
+			
+			if ( __channel[name].fade ) {	
+				__trans = new SoundTransform(0, 0);
+				__channel[name].content.soundTransform = __trans;
+				__timer = new Timer(250);
+				__timer.addEventListener(TimerEvent.TIMER, fadeInFunc(name));
+				__timer.start();		
 			}
 		}
 		
@@ -121,7 +207,10 @@ package toolbox {
 		
 		private static var __channel:Object = {};
 		private static var __mute:Boolean = false;
-		private static var __sound:Object = {};
+		private static var __sound:Object = { };
+		
+		private static var __trans:SoundTransform;
+		private static var __timer:Timer;
 		
 		private static var __oldVolume:Number;
 		private static var __domain:ApplicationDomain = ApplicationDomain.currentDomain;
