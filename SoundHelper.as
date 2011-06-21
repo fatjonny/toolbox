@@ -40,11 +40,7 @@ package toolbox {
 			
 			// set defaults
 			if( !params.channel ) { params.channel = "main"; }
-			
-			// clear / initialize channel
-			if( !__channel[ params.channel ] ) { initializeChannel( params.channel ); }
-			else { stopChannel( params.channel ); }
-			
+						
 			if( !__sound[ name ] ) {
 				if( !__domain.hasDefinition( name ) ) {
 					trace( "WARNING: unknown sound in playSound:", name );
@@ -53,6 +49,10 @@ package toolbox {
 				var soundClass:Class = __domain.getDefinition( name ) as Class;
 				__sound[ name ] = Sound( new soundClass );
 			}
+			
+			// clear / initialize channel
+			if( !__channel[ params.channel ] ) { initializeChannel( params.channel ); }
+			else { stopChannel( params.channel ); }
 			
 			__channel[ params.channel ].sound = name;
 			
