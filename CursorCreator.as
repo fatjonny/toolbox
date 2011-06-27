@@ -1,19 +1,23 @@
 /*
- * 		param name	type		default
- * 		----------	----		-------
- * 		placeBehind	(Boolean)	undefined
- * 		snap		(Boolean)	true
- * 		drag		(String)	undefined
- * 		passEvent	(Boolean)	false
- * 		passMC		(Boolean)	false
- * 		passObj		(Object)	undefined
- * 		persist		(Boolean)	false
+ * 		param name	type			default
+ * 		----------	----			-------
+ * 		placeBehind	(Boolean)		undefined
+ * 		snap		(Boolean)		true
+ * 		drag		(String)		undefined
+ * 		passEvent	(Boolean)		false
+ * 		passMC		(Boolean)		false
+ * 		passObj		(Object)		undefined
+ * 		persist		(Boolean)		false
+ * 		parent		(DispalyObject)	undefined
  */
 
 package toolbox {
 	
+	import flash.display.DisplayObject;
+	import flash.display.DisplayObjectContainer;
 	import flash.display.MovieClip;
 	import flash.events.MouseEvent;
+	import flash.geom.Point;
 	import flash.ui.Mouse;
 	
 	public class CursorCreator {
@@ -39,6 +43,10 @@ package toolbox {
 			mc.mouseEnabled = false;
 			mc.mouseChildren = false;
 			
+			__parent = mc.stage;
+			if( params.parent ) {
+				__parent = params.parent as DisplayObject;
+			}
 			if( params.drag ) {
 				mc.gotoAndPlay( params.drag );
 			}
@@ -46,6 +54,7 @@ package toolbox {
 		}
 		
 		private static var __cursorMC:MovieClip;		//only one cursor at a time, and this is it
+		private static var __parent:DisplayObject;
 		
 		private static function MovieClipEvents(e:MouseEvent):void {
 			var mc:MovieClip = __cursorMC;
@@ -55,8 +64,10 @@ package toolbox {
 				throw new Error( "Ack! CursorCreator MovieClipEvents called erroneously on " + mc );
 			}			
 			if (e.type == MouseEvent.MOUSE_MOVE) {
-				mc.x = e.stageX;
-				mc.y = e.stageY;
+				var stagePoint:Point = new Point( e.stageX, e.stageY );
+				var targetPoint:Point = __parent.globalToLocal( stagePoint );
+				mc.x = targetPoint.x;
+				mc.y = targetPoint.y;
 			}
 			else if (e.type == MouseEvent.CLICK) {	
 				if ( !params.persist ) {
