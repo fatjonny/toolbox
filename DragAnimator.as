@@ -19,7 +19,11 @@ package toolbox {
 	public class DragAnimator {
 				
 		//Originally distance based for HP, modified to be location-based for Grade 5 Science
-		public static function setupAnimation(animatedMC:MovieClip, frameLabel:String, endFunc:Function, distToDrag:int = 0, goBackOnRelease:Boolean = false, transitionType:String = "linear", animByDistance:Boolean = false):void {
+		//goBackOnRelease, transitionType, and animByDistance really need to be part of a params obj.
+		public static function setupAnimation(animatedMC:MovieClip, frameLabel:String, endFunc:Function, distToDrag:int = 0, goBackOnRelease:Boolean = false, transitionType:String = "linear", animByDistance:Boolean = false, params:Object = null):void {
+			
+			if ( params == null ) { params = { }; }
+			
 			animatedMC.addEventListener(MouseEvent.MOUSE_DOWN, clickMove);
 			__frameLabel = frameLabel;
 			__mc = animatedMC;
@@ -28,10 +32,11 @@ package toolbox {
 			__goBackOnRelease = goBackOnRelease;
 			__transitionType = transitionType;
 			__endFunc = endFunc;
-			if (distToDrag > 0) {
+			if (distToDrag != 0) {
 				__dragRatio = distToDrag / __mci.numFramesInLabel(__frameLabel);
 				trace(__dragRatio, distToDrag);
 			}
+			__params = params;
 		}
 		
 		//private
@@ -47,6 +52,7 @@ package toolbox {
 		private static var __dragRatio:int = 1; //pixels per frame
 		private static var __frameLabel:String = "";
 		private static var __endFunc:Function;
+		private static var __params:Object;
 		
 				
 		//mouse
@@ -58,6 +64,9 @@ package toolbox {
 			__mc.stage.addEventListener(MouseEvent.MOUSE_MOVE, drag);
 			__mc.stage.addEventListener(MouseEvent.MOUSE_UP, releaseMove);
 			//__mc.stage.addEventListener(Event.ENTER_FRAME, enterFrame);
+			if (__params.startFunc) {
+				__params.startFunc();
+			}
 		}
 		
 		private static function drag(e:MouseEvent):void {
