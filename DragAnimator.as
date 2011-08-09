@@ -2,12 +2,19 @@
  * This is for a single object. 
  * Click and drag left or right to cause animation to happen
  * Frame is based on x location on screen
+ * 
+ * param name	Type		
+ * ----------	----		
+ * hideMouse	Boolean		
+ * startFunc	Function	
+ * 
  */
 
 package toolbox {
 	
 	import flash.display.MovieClip;
 	import flash.events.MouseEvent;
+	import flash.ui.Mouse;
 	import flash.events.Event;
 	import flash.geom.Rectangle;
 	import flash.utils.getTimer;
@@ -84,6 +91,9 @@ package toolbox {
 			else {
 				__mc.gotoAndStop(frameNum);
 			}
+			if (__params.hideMouse) {
+				Mouse.hide();
+			}
 			/*
 			if(__animByDistance){
 				if (__mouseDiff > deadzone) {
@@ -107,6 +117,7 @@ package toolbox {
 		
 		private static function finish():void {	
 			trace("End of Frame");
+			Mouse.show();
 			__mc.removeEventListener(MouseEvent.MOUSE_DOWN, clickMove);
 			__mc.stage.removeEventListener(MouseEvent.MOUSE_MOVE, drag);
 			__mc.stage.removeEventListener(MouseEvent.MOUSE_UP, releaseMove);
@@ -122,6 +133,9 @@ package toolbox {
 			//__mc.stage.removeEventListener(Event.ENTER_FRAME, enterFrame);
 			if (__goBackOnRelease) {
 				animateBack();
+			}
+			if (__params.hideMouse) {
+				Mouse.show();
 			}
 			//gotoClosestView(); //if goBackOnRelease is on. - needs to use tweener
 		}

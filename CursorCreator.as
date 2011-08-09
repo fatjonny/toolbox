@@ -77,12 +77,8 @@ package toolbox {
 			}
 			else if (e.type == MouseEvent.CLICK) {	
 				if ( !params.persist ) {
-					//click through disabled
-					mc.mouseEnabled = true;
-					mc.mouseChildren = true;
 					RemoveRegisteredMovieClip( mc );
-					mc.stage.removeEventListener(MouseEvent.MOUSE_MOVE, MovieClipEvents);
-					Mouse.show();
+					ResetCursor();
 				}
 				if (params.placeBehind) {
 					params.target.parent.addChild(params.target);
