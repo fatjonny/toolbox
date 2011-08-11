@@ -4,11 +4,13 @@
  * 		placeBehind	(Boolean)		undefined
  * 		snap		(Boolean)		true
  * 		drag		(String)		undefined
- * 		passEvent	(Boolean)		false
- * 		passMC		(Boolean)		false
- * 		passObj		(Object)		undefined
+ * 		-passEvent	(Boolean)		false
+ * 		-passMC		(Boolean)		false
+ * 		-passObj	(Object)		undefined
  * 		persist		(Boolean)		false
- * 		parent		(DispalyObject)	undefined
+ * 		parent		(DisplayObject)	undefined
+ * 		target		(MovieClip)		undefined
+ * 		clickFunc	(Function)		undefined
  */
 
 package toolbox {
@@ -21,17 +23,19 @@ package toolbox {
 	import flash.ui.Mouse;
 	
 	public class CursorCreator {
-				
-		public static function CreateCursor(mc:MovieClip, targetMC:MovieClip, func:Function, params:Object = null):void {
+
+		//targetMC:MovieClip, func:Function
+		public static function CreateCursor(mc:MovieClip, params:Object = null):void {
 			if( mc == null ) { throw new Error( "CreateCursor error! null passed as a MovieClip" ); }
 			if ( FindMovieClipParams( mc ) ) { RemoveRegisteredMovieClip( mc ); }
 			
-			if (params == null) { params = { }; }			
+			trace("Set Cursor", mc.name);
+			if (params == null) { params = { }; }	
+			if (params["offsetX"] == null) { params["offsetX"] = 0; }
+			if (params["offsetY"] == null) { params["offsetY"] = 0; }
 			if ( params[ "snap" ] == null ) { params[ "snap" ]	= true; }
 			
 			params.mc = mc;
-			params.target = targetMC;
-			params.func = func;
 			__registeredButtons.push( params );
 			__cursorMC = mc; 
 			
@@ -50,7 +54,9 @@ package toolbox {
 			if( params.drag ) {
 				mc.gotoAndPlay( params.drag );
 			}
-			params.target.addEventListener(MouseEvent.CLICK, MovieClipEvents);
+			if(params.clickFunc){
+				params.target.addEventListener(MouseEvent.CLICK, MovieClipEvents);
+			}
 		}
 		
 		private static var __cursorMC:MovieClip;		//only one cursor at a time, and this is it
@@ -59,24 +65,20 @@ package toolbox {
 		private static function MovieClipEvents(e:MouseEvent):void {
 			var mc:MovieClip = __cursorMC;
 			var params:Object = FindMovieClipParams(mc);
-						
+			
 			if( params == null ) {
 				throw new Error( "Ack! CursorCreator MovieClipEvents called erroneously on " + mc );
-			}			
+			}
 			if (e.type == MouseEvent.MOUSE_MOVE) {
 				var stagePoint:Point = new Point( e.stageX, e.stageY );
 				var targetPoint:Point = __parent.globalToLocal( stagePoint );
-				mc.x = targetPoint.x;
-				mc.y = targetPoint.y;
+				mc.x = targetPoint.x + params.offsetX;
+				mc.y = targetPoint.y + params.offsetY;
 			}
 			else if (e.type == MouseEvent.CLICK) {	
 				if ( !params.persist ) {
-					//click through disabled
-					mc.mouseEnabled = true;
-					mc.mouseChildren = true;
 					RemoveRegisteredMovieClip( mc );
-					mc.stage.removeEventListener(MouseEvent.MOUSE_MOVE, MovieClipEvents);
-					Mouse.show();
+					ResetCursor();
 				}
 				if (params.placeBehind) {
 					params.target.parent.addChild(params.target);
@@ -90,24 +92,36 @@ package toolbox {
 					mc.y = params.target.y;
 				}
 				if( params.passEvent ) {
-					params.func( e );
+					params.clickFunc( e );
 				}
 				else if( params.passMC ) {
-					params.func( params.mc );
+					params.clickFunc( params.mc );
 				}
 				else if( params.passObj ) {
-					params.func( params.passObj );
+					params.clickFunc( params.passObj );
 				}
 				else {
-					params.func();
+					params.clickFunc();
 				}
 			}
+		}
+		
+		public static function ResetCursor():void {
+			trace("Reset cursor");
+			if(__cursorMC){
+				__cursorMC.stage.removeEventListener(MouseEvent.MOUSE_MOVE, MovieClipEvents);
+				__cursorMC.mouseEnabled = true;
+				__cursorMC.mouseChildren = true;
+				__cursorMC = null;
+			}
+			Mouse.show();
 		}
 		
 		public static function RemoveRegisteredMovieClip( mc:MovieClip ):void {
 			var params:Object = FindMovieClipParams( mc, true );
 			if( params == null ) { return; }
 			
+			Mouse.show();
 			mc.buttonMode = false;
 			mc.mouseChildren = true;
 			mc.removeEventListener( MouseEvent.CLICK, MovieClipEvents );
