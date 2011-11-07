@@ -47,6 +47,9 @@ package toolbox {
 			mc.mouseEnabled = false;
 			mc.mouseChildren = false;
 			
+			mc.x = mc.stage.mouseX + params.offsetX;
+			mc.y = mc.stage.mouseY + params.offsetY;
+			
 			__parent = mc.stage;
 			if( params.parent ) {
 				__parent = params.parent as DisplayObject;
@@ -70,6 +73,7 @@ package toolbox {
 				throw new Error( "Ack! CursorCreator MovieClipEvents called erroneously on " + mc );
 			}
 			if (e.type == MouseEvent.MOUSE_MOVE) {
+				trace("mousemove ----->");
 				var stagePoint:Point = new Point( e.stageX, e.stageY );
 				var targetPoint:Point = __parent.globalToLocal( stagePoint );
 				mc.x = targetPoint.x + params.offsetX;
