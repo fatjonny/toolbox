@@ -7,7 +7,7 @@
  * ----------	----		
  * hideMouse	Boolean		
  * startFunc	Function	
- * 
+ * forwardOnly	Boolean 	only animates forward along the timeline, not back.
  */
 
 package toolbox {
@@ -38,12 +38,13 @@ package toolbox {
 			__animByDistance = animByDistance;
 			__goBackOnRelease = goBackOnRelease;
 			__transitionType = transitionType;
-			__endFunc = endFunc;
+			__endFunc = endFunc;		
+			__initialFrame = __mci.startFrameForLabel(__frameLabel);
+			__params = params;
 			if (distToDrag != 0) {
 				__dragRatio = distToDrag / __mci.numFramesInLabel(__frameLabel);
 				trace(__dragRatio, distToDrag);
 			}
-			__params = params;
 		}
 		
 		//private
@@ -59,14 +60,25 @@ package toolbox {
 		private static var __dragRatio:int = 1; //pixels per frame
 		private static var __frameLabel:String = "";
 		private static var __endFunc:Function;
-		private static var __params:Object;
-		
+		private static var __params:Object; 
+		private static var __initialFrame:int; //updates each time you click, if forwardOnly
 				
 		//mouse
 		private static function clickMove(e:MouseEvent):void {
-			trace("Mouse Clicked");
+			trace("Mouse Clicked, initial frame =", __initialFrame);
 			__direction = "";
-			__mc.gotoAndStop(__mci.startFrameForLabel(__frameLabel));
+			if (__params.forwardOnly == true) {
+				if(__mc.currentFrame > __mci.startFrameForLabel(__frameLabel)){
+					__initialFrame = __mc.currentFrame; 
+				}
+				else {
+					__initialFrame = __mci.startFrameForLabel(__frameLabel);
+				}
+				__mc.gotoAndStop(__initialFrame);
+			}
+			else{
+				__mc.gotoAndStop(__mci.startFrameForLabel(__frameLabel));
+			}
 			__mouseStartX = e.stageX;
 			__mc.stage.addEventListener(MouseEvent.MOUSE_MOVE, drag);
 			__mc.stage.addEventListener(MouseEvent.MOUSE_UP, releaseMove);
@@ -78,18 +90,25 @@ package toolbox {
 		
 		private static function drag(e:MouseEvent):void {
 			__mouseDiff = __mouseStartX - e.stageX;
-			var frameNum:int = Math.floor(__mci.startFrameForLabel(__frameLabel) + __mouseDiff / __dragRatio)
-			var totalFrames:int = __mci.startFrameForLabel(__frameLabel) + __mci.numFramesInLabel(__frameLabel) -1 ; 
-			trace(frameNum, totalFrames);
-			if (frameNum > totalFrames) {
-				frameNum = totalFrames; 
+			var frameNum:int = __initialFrame + Math.floor(__mouseDiff / __dragRatio);
+			var maxFrame:int = __mci.startFrameForLabel(__frameLabel) + __mci.numFramesInLabel(__frameLabel); 
+			trace(frameNum, maxFrame);
+			if (frameNum > maxFrame) {
+				frameNum = maxFrame; 
+				__mc.gotoAndStop(frameNum);
 				finish();
 			}
 			else if (frameNum < __mci.startFrameForLabel(__frameLabel)) {
 				frameNum = __mci.startFrameForLabel(__frameLabel);
+			}			
+			else{
+			if (__params.forwardOnly == true && frameNum < __mc.currentFrame) {
+				//do nothing
+				trace("Forward only, difference is", __mc.currentFrame - frameNum);
 			}
 			else {
 				__mc.gotoAndStop(frameNum);
+			}
 			}
 			if (__params.hideMouse) {
 				Mouse.hide();
