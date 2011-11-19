@@ -8,6 +8,8 @@
  * hideMouse	Boolean		
  * startFunc	Function	
  * forwardOnly	Boolean 	only animates forward along the timeline, not back.
+ * noRelease	Boolean		disables release function (always dragging)
+ * useY			Boolean		sets the program to use Y not X for distance calculation
  */
 
 package toolbox {
@@ -56,6 +58,7 @@ package toolbox {
 		private static var __goBackOnRelease:Boolean = false;
 		private static var __mouseDiff:int = 0;
 		private static var __mouseStartX:int = 0;
+		private static var __mouseStartY:int = 0;
 		private static var __animByDistance:Boolean = false;		
 		private static var __dragRatio:int = 1; //pixels per frame
 		private static var __frameLabel:String = "";
@@ -80,8 +83,11 @@ package toolbox {
 				__mc.gotoAndStop(__mci.startFrameForLabel(__frameLabel));
 			}
 			__mouseStartX = e.stageX;
+			__mouseStartY = e.stageY;
 			__mc.stage.addEventListener(MouseEvent.MOUSE_MOVE, drag);
-			__mc.stage.addEventListener(MouseEvent.MOUSE_UP, releaseMove);
+			if(!__params.noRelease){
+				__mc.stage.addEventListener(MouseEvent.MOUSE_UP, releaseMove);
+			}
 			//__mc.stage.addEventListener(Event.ENTER_FRAME, enterFrame);
 			if (__params.startFunc) {
 				__params.startFunc();
@@ -89,7 +95,12 @@ package toolbox {
 		}
 		
 		private static function drag(e:MouseEvent):void {
-			__mouseDiff = __mouseStartX - e.stageX;
+			if (__params.useY == true) {
+				__mouseDiff = __mouseStartY - e.stageY;
+			}
+			else {
+				__mouseDiff = __mouseStartX - e.stageX;
+			}
 			var frameNum:int = __initialFrame + Math.floor(__mouseDiff / __dragRatio);
 			var maxFrame:int = __mci.startFrameForLabel(__frameLabel) + __mci.numFramesInLabel(__frameLabel); 
 			trace(frameNum, maxFrame);
@@ -148,7 +159,9 @@ package toolbox {
 		private static function releaseMove(e:MouseEvent):void {
 			trace("Mouse Released");
 			__mc.stage.removeEventListener(MouseEvent.MOUSE_MOVE, drag);
-			__mc.stage.removeEventListener(MouseEvent.MOUSE_UP, releaseMove);
+			if(!__params.noRelease){
+				__mc.stage.removeEventListener(MouseEvent.MOUSE_UP, releaseMove);
+			}
 			//__mc.stage.removeEventListener(Event.ENTER_FRAME, enterFrame);
 			if (__goBackOnRelease) {
 				animateBack();
