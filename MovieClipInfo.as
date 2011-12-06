@@ -1,5 +1,5 @@
 /*
- * 
+ * labels prefaced with @ will not contribute to label length
  */
 
 package toolbox
@@ -56,28 +56,26 @@ package toolbox
 			var nextIndex:uint = 0;
 			for ( var i:uint = 0 ; i < currentLabels.length ; i++ ) {
 				labelName = FrameLabel( currentLabels[ i ] ).name;
-				if (labelName.substr(0, 1) != "@") {
-					__names[ i ] = labelName;
+				__names[ i ] = labelName;
+				
+				// count up to the next label, unless it starts with @, then skip ahead until it doesn't
+				nextIndex = i + 1;
+				while (nextIndex < currentLabels.length && FrameLabel( currentLabels[ nextIndex ] ).name.substr(0, 1) == "@") {
+					nextIndex ++;
+					if (nextIndex == currentLabels.length) { //last label is an @
+						nextIndex = i;
+						break;
+					}
+				}					
 					
-					// count up to the next label, unless it starts with @, then skip ahead until it doesn't
-					nextIndex = i + 1;
-					while (nextIndex < currentLabels.length && FrameLabel( currentLabels[ nextIndex ] ).name.substr(0, 1) == "@") {
-						nextIndex ++;
-						if (nextIndex == currentLabels.length) { //last label is an @
-							nextIndex = i;
-							break;
-						}
-					}					
-						
-					if( i == currentLabels.length - 1 || nextIndex == i) {
-						// make sure to include the last frame
-						labelFrameCount = __totalFrames - FrameLabel( currentLabels[ i ] ).frame + 1;
-					}
-					else {						
-						labelFrameCount = FrameLabel(currentLabels[ nextIndex ]).frame - FrameLabel(currentLabels[ i ]).frame;
-					}
-					__frameInfo[ labelName ] = { startFrame:FrameLabel( currentLabels[ i ] ).frame, numFrames:labelFrameCount };
+				if( i == currentLabels.length - 1 || nextIndex == i) {
+					// make sure to include the last frame
+					labelFrameCount = __totalFrames - FrameLabel( currentLabels[ i ] ).frame + 1;
 				}
+				else {						
+					labelFrameCount = FrameLabel(currentLabels[ nextIndex ]).frame - FrameLabel(currentLabels[ i ]).frame;
+				}
+				__frameInfo[ labelName ] = { startFrame:FrameLabel( currentLabels[ i ] ).frame, numFrames:labelFrameCount };
 			}
 		}
 	}
