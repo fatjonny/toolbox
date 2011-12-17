@@ -5,7 +5,7 @@
  *  channel:String	("main")
  *  startAt:int		(0)
  *  onLoop:Function	()
- *  fade:Number   (undefined)
+ *  fade:Number   (undefined)	decimal percent to fade per .25 sec
  */
 
 package toolbox {
@@ -33,6 +33,25 @@ package toolbox {
 			}
 			
 			SoundMixer.soundTransform = volTransform;
+		}
+		
+		public static function mute():void {
+			if (__mute) { return; }
+			else {
+				trace("MUTE IT");
+				__mute = true;
+				__oldVolume = SoundMixer.soundTransform.volume;
+				SoundMixer.soundTransform = new SoundTransform(0, 0);
+			}
+		}
+		
+		public static function unMute():void {
+			if (!__mute) { return; }
+			else {
+				trace("UNMUTE IT to", __oldVolume);
+				__mute = false;
+				SoundMixer.soundTransform = new SoundTransform(__oldVolume, 0);
+			}
 		}
 		
 		public static function playSound( name:String, params:Object = null ):void {
