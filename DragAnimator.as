@@ -45,7 +45,7 @@ package toolbox {
 			__params = params;
 			if (distToDrag != 0) {
 				__dragRatio = distToDrag / __mci.numFramesInLabel(__frameLabel);
-				trace(__dragRatio, distToDrag);
+				trace("drag ratio", __dragRatio, " Distance to drag", distToDrag);
 			}
 		}
 		
@@ -68,7 +68,7 @@ package toolbox {
 				
 		//mouse
 		private static function clickMove(e:MouseEvent):void {
-			trace("Mouse Clicked, initial frame =", __initialFrame);
+			trace("Mouse Clicked at", e.stageX, e.stageY, "initial frame =", __initialFrame);
 			__direction = "";
 			if (__params.forwardOnly == true) {
 				if(__mc.currentFrame > __mci.startFrameForLabel(__frameLabel)){
@@ -103,9 +103,10 @@ package toolbox {
 			}
 			var frameNum:int = __initialFrame + Math.floor(__mouseDiff / __dragRatio);
 			var maxFrame:int = __mci.startFrameForLabel(__frameLabel) + __mci.numFramesInLabel(__frameLabel); 
-			trace(frameNum, maxFrame);
+			trace("dragAnim", frameNum, maxFrame);
 			if (frameNum > maxFrame) {
 				frameNum = maxFrame; 
+				trace("Corrected to",frameNum, maxFrame);
 				__mc.gotoAndStop(frameNum);
 				finish();
 			}
