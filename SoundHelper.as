@@ -1,11 +1,12 @@
 /*
  * Sound Object Defaults
  * ---------------------
- *  loop:Boolean	(false)
- *  channel:String	("main")
+ *  loop:Boolean	(false)		Uses an event listener to loop on sound complete
+ *  channel:String	("main")	Sets channel for overlapping sounds
  *  startAt:int		(0)
  *  onLoop:Function	()
  *  fade:Number   (undefined)	decimal percent to fade per .25 sec
+ *  gapless:Boolean	(false)		Makes playback gapless by using Flash's built in loop. DO NOT USE PAUSE OR RESTART WITH THIS. Redundant with loop, but does not interfere.
  */
 
 package toolbox {
@@ -59,7 +60,6 @@ package toolbox {
 			
 			// set defaults
 			if( !params.channel ) { params.channel = "main"; }
-						
 			if( !__sound[ name ] ) {
 				if( !__domain.hasDefinition( name ) ) {
 					trace( "WARNING: unknown sound in playSound:", name );
@@ -82,8 +82,15 @@ package toolbox {
 			if( params.onLoop ) {
 				__channel[ params.channel ].onLoop = params.onLoop;
 			}
+			
+			if (params.gapless) {
+				__channel[ params.channel ].gapless = params.gapless;	
+				__channel[ params.channel ].content = __sound[ __channel[ params.channel ].sound ].play( __channel[ params.channel ].startAt, int.MAX_VALUE);
+			}
+			else {				
+				__channel[ params.channel ].content = __sound[ __channel[ params.channel ].sound ].play( __channel[ params.channel ].startAt );
+			}
 						
-			__channel[ params.channel ].content = __sound[ __channel[ params.channel ].sound ].play( __channel[ params.channel ].startAt );
 			
 			if ( params.fade ) {
 				__channel[ params.channel ].fade = params.fade;
