@@ -94,8 +94,8 @@ package toolbox {
 			return null;
 		}
 		
-		private static function showPopup( buttonMC:MovieClip ):void {
-			var params:Object = FindMovieClipParams( buttonMC );
+		private static function showPopup( mc:MovieClip ):void {
+			var params:Object = FindMovieClipParams( mc );
 			params.mc.visible = true;
 			
 			//also go to in frames = a new param?
