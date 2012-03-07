@@ -56,6 +56,8 @@ package toolbox {
 			
 			//reset all variables
 			//remove listeners
+			ButtonCreator.RemoveRegisteredMovieClip(params.buttonMC);
+			ButtonCreator.RemoveRegisteredMovieClip(params.closeBtn);
 		}
 		
 		private static var __popups:Array = [];
