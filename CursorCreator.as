@@ -11,6 +11,8 @@
  * 		parent		(DisplayObject)	undefined
  * 		target		(MovieClip)		undefined
  * 		clickFunc	(Function)		undefined
+ * 		offsetX		(number)		0
+ * 		offsetY		(number)		0
  */
 
 package toolbox {
@@ -62,7 +64,41 @@ package toolbox {
 			}
 		}
 		
-		private static var __cursorMC:MovieClip;		//only one cursor at a time, and this is it
+		
+		public static function ResetCursor():void {
+			trace("Reset cursor");
+			if(__cursorMC){
+				__cursorMC.stage.removeEventListener(MouseEvent.MOUSE_MOVE, MovieClipEvents);
+				__cursorMC.mouseEnabled = true;
+				__cursorMC.mouseChildren = true;
+				__cursorMC = null;
+			}
+			Mouse.show();
+		}
+		
+		public static function RemoveRegisteredMovieClip( mc:MovieClip ):void {
+			var params:Object = FindMovieClipParams( mc, true );
+			if( params == null ) { return; }
+			
+			Mouse.show();
+			mc.buttonMode = false;
+			mc.mouseChildren = true;
+			mc.removeEventListener( MouseEvent.CLICK, MovieClipEvents );
+			mc.removeEventListener( MouseEvent.MOUSE_OVER, MovieClipEvents );
+			mc.removeEventListener( MouseEvent.MOUSE_OUT, MovieClipEvents );
+			if( params.normal ) {
+				mc.gotoAndStop( params.normal );
+			}
+			if( params.normalFunc ) {
+				params.normalFunc( mc );
+			}
+		}
+		
+		public static function getMC():MovieClip {return __cursorMC; }
+		
+		//------------------------------
+		
+		private static var __cursorMC:MovieClip; //only one cursor at a time, and this is it
 		private static var __parent:DisplayObject;
 		
 		private static function MovieClipEvents(e:MouseEvent):void {
@@ -106,35 +142,6 @@ package toolbox {
 				else {
 					params.clickFunc();
 				}
-			}
-		}
-		
-		public static function ResetCursor():void {
-			trace("Reset cursor");
-			if(__cursorMC){
-				__cursorMC.stage.removeEventListener(MouseEvent.MOUSE_MOVE, MovieClipEvents);
-				__cursorMC.mouseEnabled = true;
-				__cursorMC.mouseChildren = true;
-				__cursorMC = null;
-			}
-			Mouse.show();
-		}
-		
-		public static function RemoveRegisteredMovieClip( mc:MovieClip ):void {
-			var params:Object = FindMovieClipParams( mc, true );
-			if( params == null ) { return; }
-			
-			Mouse.show();
-			mc.buttonMode = false;
-			mc.mouseChildren = true;
-			mc.removeEventListener( MouseEvent.CLICK, MovieClipEvents );
-			mc.removeEventListener( MouseEvent.MOUSE_OVER, MovieClipEvents );
-			mc.removeEventListener( MouseEvent.MOUSE_OUT, MovieClipEvents );
-			if( params.normal ) {
-				mc.gotoAndStop( params.normal );
-			}
-			if( params.normalFunc ) {
-				params.normalFunc( mc );
 			}
 		}
 		
