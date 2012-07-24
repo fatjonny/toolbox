@@ -10,7 +10,7 @@
  * 		persist		(Boolean)		false
  * 		parent		(DisplayObject)	undefined
  * 		target		(MovieClip)		undefined
- * 		clickFunc	(Function)		undefined
+ * 		clickFunc	(Function)		undefined - needs target to be defined
  * 		offsetX		(number)		0
  * 		offsetY		(number)		0
  */
