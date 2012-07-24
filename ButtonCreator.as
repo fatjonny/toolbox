@@ -82,7 +82,9 @@ package toolbox {
 		public static function ReenableRegisteredMovieClip(mc:MovieClip):void {
 			var params:Object = FindMovieClipParams( mc );
 			if ( params == null ) { return; }
-			
+			if( params.normal ) {
+				mc.gotoAndStop( params.normal );
+			}
 			mc.buttonMode = true;
 			mc.addEventListener( MouseEvent.CLICK, MovieClipEvents );
 			mc.addEventListener( MouseEvent.MOUSE_OVER, MovieClipEvents );
@@ -93,7 +95,6 @@ package toolbox {
 			var params:Object;
 			var i:uint = 0;
 			var count:uint = 0;
-			trace( "+- DisableGroupRegisteredMovieClips -+" );
 			while( i < __registeredButtons.length ) {
 				params = __registeredButtons[ i ];
 				if( params.group == group ) {
@@ -102,14 +103,14 @@ package toolbox {
 				}
 				i++;
 			}
-			trace( "~~~~~~~~~~", count );
+			trace( "+- DisableGroupRegisteredMovieClips -+",count );
+			//trace( "~~~~~~~~~~", count );
 		}
 		
 		public static function ReenableGroupMovieClips(group:String):void {
 			var params:Object;
 			var i:uint = 0;
 			var count:uint = 0;
-			trace( "+- EnableGroupRegisteredMovieClips -+" );
 			while( i < __registeredButtons.length ) {
 				params = __registeredButtons[ i ];
 				if( params.group == group ) {
@@ -118,7 +119,8 @@ package toolbox {
 				}
 				i++;
 			}
-			trace( "~~~~~~~~~~", count );
+			//trace( "~~~~~~~~~~", count );
+			trace( "+- EnableGroupRegisteredMovieClips -+",count );
 		}
 		
 		public static function RemoveAllGroupRegisteredMovieClips( group:String ):void {
