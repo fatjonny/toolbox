@@ -133,14 +133,16 @@ package toolbox {
 		
 		public static function RemoveRegisteredMovieClip( mc:MovieClip ):void {
 			var dropdown:Object = findDropdown( mc, true );
-			var i:uint;
-			
-			if( !dropdown.noSlot ) {
-				ButtonCreator.RemoveRegisteredMovieClip( dropdown.mc[ dropdown.slotName ] );
-			}
-			
-			for( i = 1 ; i <= dropdown.options.length ; i++ ) {
-				ButtonCreator.RemoveRegisteredMovieClip( dropdown.mc[ dropdown.optionName + i ] );
+			if (dropdown) {				
+				var i:uint;
+				
+				if( !dropdown.noSlot ) {
+					ButtonCreator.RemoveRegisteredMovieClip( dropdown.mc[ dropdown.slotName ] );
+				}
+				
+				for( i = 1 ; i <= dropdown.options.length ; i++ ) {
+					ButtonCreator.RemoveRegisteredMovieClip( dropdown.mc[ dropdown.optionName + i ] );
+				}
 			}
 		}
 		
