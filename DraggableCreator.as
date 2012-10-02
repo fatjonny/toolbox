@@ -72,6 +72,12 @@ package toolbox {
 			}
 		}
 		
+		//adds a separate area to use for the hit test
+		public static function setDragHitArea( dragMC:MovieClip, hitMC:MovieClip):void {
+			var draggable:Object = findDraggable(dragMC);
+			draggable.dragHitMC = hitMC;
+		}
+		
 		private static var __draggable:Array = [];
 		private static var __currentDraggable:Object;
 		
@@ -98,7 +104,14 @@ package toolbox {
 			var mostArea:Boolean = __currentDraggable.mostArea;
 			var bestFit:MovieClip;
 			var bestFitArea:Number = 0;
-			var dragMC:MovieClip = __currentDraggable.mc as MovieClip;
+			var dragMC:MovieClip;
+			if (__currentDraggable.dragHitMC != undefined) {
+				trace("Check special hit area");
+				dragMC = __currentDraggable.dragHitMC as MovieClip;
+			}
+			else {
+				dragMC = __currentDraggable.mc as MovieClip;
+			}
 			for( var i:uint = 0 ; i < __currentDraggable.hitAreas.length ; i++ ) {
 				var currentTest:MovieClip = __currentDraggable.hitAreas[ i ];
 				if( currentTest && dragMC.hitTestObject( currentTest ) ) {
@@ -124,6 +137,7 @@ package toolbox {
 				__currentDraggable.mc.scaleX = __currentDraggable.mc.dragScaleX;
 				__currentDraggable.mc.scaleY = __currentDraggable.mc.dragScaleY;
 			}
+			dragMC = __currentDraggable.mc as MovieClip; //reset for final checks
 			removeDraggable( __currentDraggable.mc );
 			__currentDraggable.up( __currentDraggable, bestFit );
 			dragMC.stopDrag();
