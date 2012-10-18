@@ -85,6 +85,9 @@ package toolbox {
 			if( params.normal ) {
 				mc.gotoAndStop( params.normal );
 			}
+			if (params.normalFunc) {
+				params.normalFunc(mc);
+			}
 			mc.buttonMode = true;
 			mc.addEventListener( MouseEvent.CLICK, MovieClipEvents );
 			mc.addEventListener( MouseEvent.MOUSE_OVER, MovieClipEvents );
