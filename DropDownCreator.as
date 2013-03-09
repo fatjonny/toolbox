@@ -204,6 +204,7 @@ package toolbox {
 					}
 				}
 				dropdown.open = true;
+				ButtonCreator.CreateFromMovieClip(dropdown.mc[dropdown.slotName], function():void { hideOptions(dropdown); } );
 			}
 		}
 		
