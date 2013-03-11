@@ -140,9 +140,28 @@ package toolbox {
 					ButtonCreator.RemoveRegisteredMovieClip( dropdown.mc[ dropdown.slotName ] );
 				}
 				
-				for( i = 1 ; i <= dropdown.options.length ; i++ ) {
+				for ( i = 1 ; i <= dropdown.options.length ; i++ ) {
+					if (!dropdown.optionsExist) {
+						dropdown.mc.removeChild(dropdown.mc[dropdown.optionName + i]);					
+					}
 					ButtonCreator.RemoveRegisteredMovieClip( dropdown.mc[ dropdown.optionName + i ] );
 				}
+			}
+		}
+		
+		public static function SetHoverLabel( mc:MovieClip, label:String ):void {
+			var dropdown:Object = findDropdown( mc, true );
+			if (dropdown && !dropdown.noSlot) {	
+				dropdown.labelHover = label;
+				ButtonCreator.CreateFromMovieClip( dropdown.mc[ dropdown.slotName ], function():void { showOptions( dropdown ); }, { normalFunc:buttonFunc( dropdown.mc[ dropdown.slotName ], dropdown.slotBGName, dropdown.labelWrong ), hoverFunc:buttonFunc( dropdown.mc[ dropdown.slotName ], dropdown.slotBGName, dropdown.labelHover ) } );
+			}
+		}
+		
+		public static function SetNormalLabel( mc:MovieClip, label:String ):void {
+			var dropdown:Object = findDropdown( mc, true );
+			if (dropdown && !dropdown.noSlot) {	
+				dropdown.labelNormal = label;
+				ButtonCreator.CreateFromMovieClip( dropdown.mc[ dropdown.slotName ], function():void { showOptions( dropdown ); }, { normalFunc:buttonFunc( dropdown.mc[ dropdown.slotName ], dropdown.slotBGName, dropdown.labelWrong ), hoverFunc:buttonFunc( dropdown.mc[ dropdown.slotName ], dropdown.slotBGName, dropdown.labelHover ) } );
 			}
 		}
 		
@@ -204,6 +223,7 @@ package toolbox {
 					}
 				}
 				dropdown.open = true;
+				ButtonCreator.CreateFromMovieClip(dropdown.mc[dropdown.slotName], function():void { hideOptions(dropdown); } );//added by Megan to make the slot close the dropdown
 			}
 		}
 		
