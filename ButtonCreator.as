@@ -106,7 +106,7 @@ package toolbox {
 				}
 				i++;
 			}
-			trace( "+- DisableGroupRegisteredMovieClips -+",count );
+			trace( "+- DisableGroupRegisteredMovieClips -+",group,count );
 			//trace( "~~~~~~~~~~", count );
 		}
 		
@@ -123,14 +123,14 @@ package toolbox {
 				i++;
 			}
 			//trace( "~~~~~~~~~~", count );
-			trace( "+- EnableGroupRegisteredMovieClips -+",count );
+			trace( "+- EnableGroupRegisteredMovieClips -+",group,count );
 		}
 		
 		public static function RemoveAllGroupRegisteredMovieClips( group:String ):void {
 			var params:Object;
 			var i:uint = 0;
 			var count:uint = 0;
-			trace( "+- RemoveAllGroupRegisteredMovieClips -+" );
+			trace( "+- RemoveAllGroupRegisteredMovieClips -+",group );
 			while( i < __registeredButtons.length ) {
 				params = __registeredButtons[ i ];
 				if( params.group == group ) {
