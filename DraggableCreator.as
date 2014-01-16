@@ -131,7 +131,7 @@ package toolbox {
 					}
 				}
 			}
-			if( __currentDraggable.snapBack && !bestFit ) {
+			if( __currentDraggable.snapBack) {// && !bestFit 
 				__currentDraggable.mc.x = __currentDraggable.mc.dragOrigX;
 				__currentDraggable.mc.y = __currentDraggable.mc.dragOrigY;
 				__currentDraggable.mc.scaleX = __currentDraggable.mc.dragScaleX;
